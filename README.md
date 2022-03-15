@@ -1,4 +1,4 @@
-# Borsch - RequestHandler
+# Borsch - HTTP Message
 
 A simple PSR-7 and PSR-17 implementation.
 
