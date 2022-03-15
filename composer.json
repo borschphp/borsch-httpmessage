@@ -1,0 +1,35 @@
+{
+  "name": "borschphp/httpmessage",
+  "description": "A PSR-7 and PSR-17 implementation.",
+  "keywords": [
+    "http",
+    "http-message",
+    "psr-7",
+    "psr-17"
+  ],
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Alexandre DEBUSSCHERE",
+      "email": "alexandre.debusschere@hey.com"
+    }
+  ],
+  "require": {
+    "php": "^7.2|^8.0",
+    "psr/http-message": "^1.0",
+    "psr/http-factory": "^1.0"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^8"
+  },
+  "autoload": {
+    "psr-4": {
+      "Borsch\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "BorschTest\\": "tests/"
+    }
+  }
+}
