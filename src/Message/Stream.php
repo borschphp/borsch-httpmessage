@@ -42,7 +42,7 @@ class Stream implements StreamInterface
             ));
         }
 
-        $stream = $resource ?: fopen('php://memory', 'wb+');
+        $stream = $resource ?: fopen('php://temp', 'wb+');
         if ($stream === false) {
             throw new RuntimeException('Unable to open stream or file.');
         }
@@ -102,7 +102,11 @@ class Stream implements StreamInterface
      */
     public function getSize(): ?int
     {
-        if (!$this->resource || !$this->size) {
+        if (!$this->resource) {
+            return null;
+        }
+
+        if (!$this->size) {
             $stats = fstat($this->resource);
             $this->size = $stats['size'] ?? null;
         }

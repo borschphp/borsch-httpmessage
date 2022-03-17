@@ -148,7 +148,7 @@ class UploadedFile implements UploadedFileInterface
         $this->stream->rewind();
 
         while (!$this->stream->eof()) {
-            fwrite($file, $this->stream->read(PHP_INT_MAX));
+            fwrite($file, $this->stream->read(8192));
         }
 
         fclose($file);

@@ -14,7 +14,7 @@ use Psr\Http\Message\ResponseInterface;
 class Response extends Message implements ResponseInterface
 {
 
-    private static $reason_phrases = [
+    protected static $reason_phrases = [
         // Informational 1xx
         100 => 'Continue',
         101 => 'Switching Protocols',
@@ -123,7 +123,7 @@ class Response extends Message implements ResponseInterface
 
         $new = clone $this;
         $new->status_code = (int)$code;
-        $new->reason_phrase = $reasonPhrase;
+        $new->reason_phrase = $reasonPhrase ?: (self::$reason_phrases[$new->status_code] ?? '');
 
         return $new;
     }

@@ -125,7 +125,7 @@ class Request extends Message implements RequestInterface
                 }
 
                 $new->header_names['host'] = $new->header_names['host'] ?? 'Host';
-                $new->headers = [$this->header_names['host'] => [$host]] + $this->headers;
+                $new->headers = [$new->header_names['host'] => [$host]] + $this->headers;
             }
         }
 

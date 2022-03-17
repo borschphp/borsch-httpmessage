@@ -23,8 +23,8 @@ class Uri implements UriInterface
     /** @var string */
     protected $host = '';
 
-    /** @var int */
-    protected $port = '';
+    /** @var int|null */
+    protected $port = null;
 
     /** @var string */
     protected $path = '';
@@ -344,8 +344,8 @@ class Uri implements UriInterface
      */
     protected function isNonStandardPort(): bool
     {
-        return !in_array($this->port, [80, 443]) ||
-            ($this->scheme == 'http' && $this->port != 80) ||
-            ($this->scheme == 'https' && $this->port != 443);
+        return !in_array($this->port, [80, 443]) &&
+            (($this->scheme == 'http' && !in_array($this->port, [80, null])) ||
+            ($this->scheme == 'https' && !in_array($this->port, [443, null])));
     }
 }
