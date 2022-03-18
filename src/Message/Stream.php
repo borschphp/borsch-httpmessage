@@ -185,13 +185,13 @@ class Stream implements StreamInterface
         if (!$this->writable) {
             $mode = $this->getMetadata('mode');
 
-            $this->writable = is_string($mode) && (
-                    strpos($mode, 'w') !== false ||
-                    strpos($mode, '+') !== false ||
-                    strpos($mode, 'x') !== false ||
-                    strpos($mode, 'c') !== false ||
-                    strpos($mode, 'a') !== false
-                );
+            $this->writable = is_string($mode) && array_reduce(str_split($mode), function ($carry, $char) {
+                if (!$carry && in_array($char, ['w', '+', 'x', 'c', 'a'])) {
+                    $carry = true;
+                }
+
+                return $carry;
+            }, false);
         }
 
         return $this->writable;

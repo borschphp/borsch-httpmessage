@@ -47,28 +47,15 @@ class Uri implements UriInterface
             return $this->composed_uri;
         }
 
-        $this->composed_uri = '';
-
-        if ($this->scheme != '') {
-            $this->composed_uri .= $this->scheme.':';
-        }
-
         $authority = $this->getAuthority();
-        if ($authority != '') {
-            $this->composed_uri .= '//'.$authority;
-        }
-
-        if ($this->path != '') {
-            $this->composed_uri .= $authority ? '/'.ltrim($this->path, '/') : $this->path;
-        }
-
-        if ($this->query != '') {
-            $this->composed_uri .= '?'.$this->query;
-        }
-
-        if ($this->fragment != '') {
-            $this->composed_uri .= '#'.$this->fragment;
-        }
+        $this->composed_uri = sprintf(
+            '%s%s%s%s%s',
+            $this->scheme != '' ? $this->scheme.':' : '',
+            $authority != '' ? '//'.$authority : '',
+            $this->path != '' ? ($authority ? '/'.ltrim($this->path, '/') : $this->path) : '',
+            $this->query != '' ? '?'.$this->query : '',
+            $this->fragment != '' ? '#'.$this->fragment : ''
+        );
 
         return $this->composed_uri;
     }
@@ -243,28 +230,14 @@ class Uri implements UriInterface
      */
     public function withPort($port): UriInterface
     {
+        $port = $this->normalizePort($port);
+
         if ($this->port == $port) {
             return $this;
         }
 
-        if ($port && !is_numeric($port)) {
-            throw new InvalidArgumentException(sprintf(
-                'Invalid port "%s" specified. It must be an integer, an integer string, or null.',
-                is_object($port) ? get_class($port) : gettype($port)
-            ));
-        }
-
-        if ($port && ($port < 1 || $port > 65535)) {
-            throw new InvalidArgumentException(sprintf(
-                'Invalid port "%d" specified. It must be a valid TCP/UDP port in range 2..65534.',
-                $port
-            ));
-        }
-
-        $port = (int)$port;
-
         $new = clone $this;
-        $new->port = $port;
+        $new->port = (int)$port;
 
         return $new;
     }
@@ -347,5 +320,25 @@ class Uri implements UriInterface
         return !in_array($this->port, [80, 443]) &&
             (($this->scheme == 'http' && !in_array($this->port, [80, null])) ||
             ($this->scheme == 'https' && !in_array($this->port, [443, null])));
+    }
+
+    /**
+     * @param int|null $port
+     * @return int|null
+     */
+    protected function normalizePort(?int $port): ?int
+    {
+        if ($port === null) {
+            return null;
+        }
+
+        if ($port < 1 || $port > 65535) {
+            throw new InvalidArgumentException(sprintf(
+                'Invalid port "%d" specified. It must be a valid TCP/UDP port in range 2..65534.',
+                $port
+            ));
+        }
+
+        return $port;
     }
 }

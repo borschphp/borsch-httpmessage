@@ -9,6 +9,7 @@ use Borsch\Message\Uri;
 use Borsch\Message\UriFactory;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
+use TypeError;
 
 class UriTest extends TestCase
 {
@@ -204,10 +205,19 @@ class UriTest extends TestCase
         $this->assertEquals(6543, $uri->withPort(6543)->getPort());
     }
 
+    public function testWithPortNullResetPort()
+    {
+        $uri = (new UriFactory())->createUri('https://example.com');
+        $this->assertNull($uri->getPort());
+        $uri = $uri->withPort(6543);
+        $this->assertEquals(6543, $uri->getPort());
+        $this->assertNull($uri->withPort(null)->getPort());
+    }
+
     public function testWithPortThrowsExceptionIfNotNumeric()
     {
         $uri = (new UriFactory())->createUri('https://example.com');
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(TypeError::class);
         $uri->withPort('borsch');
     }
 
