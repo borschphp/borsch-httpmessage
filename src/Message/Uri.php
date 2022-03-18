@@ -177,19 +177,8 @@ class Uri implements UriInterface
             return $this;
         }
 
-        if (!is_string($user)) {
-            throw new InvalidArgumentException(sprintf(
-                'Expected a string but got %s.',
-                is_object($user) ? get_class($user) : gettype($user)
-            ));
-        }
-
-        if ($password && !is_string($password)) {
-            throw new InvalidArgumentException(sprintf(
-                'Expected a string but got %s.',
-                is_object($password) ? get_class($password) : gettype($password)
-            ));
-        }
+        $user = $this->normalizeUser($user);
+        $password = $this->normalizePassword($password);
 
         $user_info = $user;
         if ($password) {
@@ -340,5 +329,23 @@ class Uri implements UriInterface
         }
 
         return $port;
+    }
+
+    /**
+     * @param string $user
+     * @return string
+     */
+    protected function normalizeUser(string $user): string
+    {
+        return $user;
+    }
+
+    /**
+     * @param string|null $password
+     * @return string|null
+     */
+    protected function normalizePassword(?string $password = null): ?string
+    {
+        return $password;
     }
 }

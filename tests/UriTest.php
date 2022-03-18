@@ -187,14 +187,14 @@ class UriTest extends TestCase
     public function testWithUserInfoThrowsExceptionIfNotString()
     {
         $uri = (new UriFactory())->createUri('https://example.com');
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(TypeError::class);
         $uri->withUserInfo(['admin']);
     }
 
     public function testWithUserInfoPasswordThrowsExceptionIfNotString()
     {
         $uri = (new UriFactory())->createUri('https://example.com');
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(TypeError::class);
         $uri->withUserInfo('admin', ['pass']);
     }
 
