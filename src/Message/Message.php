@@ -214,9 +214,7 @@ class Message implements MessageInterface
      */
     protected function normalizeHeaderValue($value): array
     {
-        if (!is_array($value)) {
-            $value = [$value];
-        }
+        $value = (array)$value;
 
         if (!count($value)) {
             throw new InvalidArgumentException(
@@ -224,14 +222,14 @@ class Message implements MessageInterface
             );
         }
 
-        foreach ($value as $val) {
+        array_walk($value, function ($val) {
             if (!is_string($val) && !is_numeric($val)) {
                 throw new InvalidArgumentException(sprintf(
                     '"%s" is not valid header value.',
-                    (is_object($val) ? get_class($val) : gettype($val))
+                    is_object($val) ? get_class($val) : gettype($val)
                 ));
             }
-        }
+        });
 
         return $value;
     }

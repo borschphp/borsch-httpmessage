@@ -110,35 +110,9 @@ class UploadedFile implements UploadedFileInterface
      */
     public function moveTo($targetPath)
     {
-        if ($this->error !== UPLOAD_ERR_OK) {
-            throw new RuntimeException(sprintf(
-                'An error occured with upload. Error code %s.',
-                $this->error
-            ));
-        }
+        $this->validateMoveTo();
 
-        if ($this->moved) {
-            throw new RuntimeException('The file cannot be moved because it has already been moved.');
-        }
-
-        if (!is_string($targetPath)) {
-            throw new InvalidArgumentException(sprintf(
-                'Invalid target path for move. Expected string but got %s.',
-                is_object($targetPath) ? get_class($targetPath) : gettype($targetPath)
-            ));
-        }
-
-        if (!strlen($targetPath)) {
-            throw new InvalidArgumentException('Target path is not valid for move, non-empty string required.');
-        }
-
-        $directory = dirname($targetPath);
-        if (!is_dir($directory) || !is_writable($directory)) {
-            throw new RuntimeException(sprintf(
-                'The target directory "%s" does not exist or is not writable.',
-                $directory
-            ));
-        }
+        $targetPath = $this->normalizeTargetPath($targetPath);
 
         $file = fopen($targetPath, 'wb+');
         if (!$file) {
@@ -186,5 +160,43 @@ class UploadedFile implements UploadedFileInterface
     public function getClientMediaType(): ?string
     {
         return $this->client_media_type;
+    }
+
+    /**
+     * @return void
+     */
+    protected function validateMoveTo()
+    {
+        if ($this->error !== UPLOAD_ERR_OK) {
+            throw new RuntimeException(sprintf(
+                'An error occured with upload. Error code %s.',
+                $this->error
+            ));
+        }
+
+        if ($this->moved) {
+            throw new RuntimeException('The file cannot be moved because it has already been moved.');
+        }
+    }
+
+    /**
+     * @param string $target
+     * @return string
+     */
+    protected function normalizeTargetPath(string $target): string
+    {
+        if (!strlen($target)) {
+            throw new InvalidArgumentException('Target path is not valid for move, non-empty string required.');
+        }
+
+        $directory = dirname($target);
+        if (!is_dir($directory) || !is_writable($directory)) {
+            throw new RuntimeException(sprintf(
+                'The target directory "%s" does not exist or is not writable.',
+                $directory
+            ));
+        }
+
+        return $target;
     }
 }

@@ -10,6 +10,7 @@ use Borsch\Message\Stream;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\StreamInterface;
+use stdClass;
 use TypeError;
 
 class MessageTest extends TestCase
@@ -135,6 +136,30 @@ class MessageTest extends TestCase
 
         $this->assertTrue($message->hasHeader('x-TESt'));
         $this->assertTrue($message->hasHeader('X-FOO'));
+    }
+
+    public function testWithHeaderNotStringThrowsException()
+    {
+        $message = new Message();
+        $this->expectException(InvalidArgumentException::class);
+        $message
+            ->withHeader('X-Test', new stdClass());
+    }
+
+    public function testWithHeaderNotStringArrayThrowsException()
+    {
+        $message = new Message();
+        $this->expectException(InvalidArgumentException::class);
+        $message
+            ->withHeader('X-Test', ['header_02', new stdClass()]);
+    }
+
+    public function testWithHeaderEmptyArrayThrowsException()
+    {
+        $message = new Message();
+        $this->expectException(InvalidArgumentException::class);
+        $message
+            ->withHeader('X-Test', []);
     }
 
     public function testGetProtocolVersion()

@@ -103,23 +103,8 @@ class Response extends Message implements ResponseInterface
      */
     public function withStatus($code, $reasonPhrase = '')
     {
-        if (!is_numeric($code)) {
-            throw new InvalidArgumentException(sprintf(
-                'Invalid status code. Expected integer but got %s.',
-                is_object($code) ? get_class($code) : gettype($code)
-            ));
-        }
-
-        if ($code < 100 || $code > 599) {
-            throw new InvalidArgumentException('Invalid status code. It must be within 100 and 599.');
-        }
-
-        if (!is_string($reasonPhrase)) {
-            throw new InvalidArgumentException(sprintf(
-                'Invalid reason phrase. Expected string but got %s.',
-                is_object($reasonPhrase) ? get_class($reasonPhrase) : gettype($reasonPhrase)
-            ));
-        }
+        $code = $this->normalizeStatusCode($code);
+        $reasonPhrase = $this->normalizeReasonPhrase($reasonPhrase);
 
         $new = clone $this;
         $new->status_code = (int)$code;
@@ -134,5 +119,34 @@ class Response extends Message implements ResponseInterface
     public function getReasonPhrase(): string
     {
         return $this->reason_phrase;
+    }
+
+    /**
+     * @param int|string $code
+     * @return int
+     */
+    protected function normalizeStatusCode($code): int
+    {
+        if (!is_numeric($code) || is_float($code)) {
+            throw new InvalidArgumentException(sprintf(
+                'Invalid status code. Expected integer but got %s.',
+                is_object($code) ? get_class($code) : gettype($code)
+            ));
+        }
+
+        if ($code < 100 || $code > 599) {
+            throw new InvalidArgumentException('Invalid status code. It must be within 100 and 599.');
+        }
+
+        return $code;
+    }
+
+    /**
+     * @param string $reason
+     * @return string
+     */
+    protected function normalizeReasonPhrase(string $reason): string
+    {
+        return $reason;
     }
 }

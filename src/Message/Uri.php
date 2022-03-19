@@ -47,15 +47,11 @@ class Uri implements UriInterface
             return $this->composed_uri;
         }
 
-        $authority = $this->getAuthority();
-        $this->composed_uri = sprintf(
-            '%s%s%s%s%s',
-            $this->scheme != '' ? $this->scheme.':' : '',
-            $authority != '' ? '//'.$authority : '',
-            $this->path != '' ? ($authority ? '/'.ltrim($this->path, '/') : $this->path) : '',
-            $this->query != '' ? '?'.$this->query : '',
-            $this->fragment != '' ? '#'.$this->fragment : ''
-        );
+        $this->composed_uri = $this->getComposedUriScheme().
+            $this->getComposedUriAuthority().
+            $this->getComposedUriPath().
+            $this->getComposedUriQuery().
+            $this->getComposedUriFragment();
 
         return $this->composed_uri;
     }
@@ -347,5 +343,49 @@ class Uri implements UriInterface
     protected function normalizePassword(?string $password = null): ?string
     {
         return $password;
+    }
+
+    /**
+     * @return string
+     */
+    protected function getComposedUriScheme(): string
+    {
+        return $this->scheme != '' ? $this->scheme.':' : '';
+    }
+
+    /**
+     * @return string
+     */
+    protected function getComposedUriAuthority(): string
+    {
+        $authority = $this->getAuthority();
+
+        return $authority != '' ? '//'.$authority : '';
+    }
+
+    /**
+     * @return string
+     */
+    protected function getComposedUriPath(): string
+    {
+        $authority = $this->getAuthority();
+
+        return $this->path != '' ? ($authority ? '/'.ltrim($this->path, '/') : $this->path) : '';
+    }
+
+    /**
+     * @return string
+     */
+    protected function getComposedUriQuery(): string
+    {
+        return $this->query != '' ? '?'.$this->query : '';
+    }
+
+    /**
+     * @return string
+     */
+    protected function getComposedUriFragment(): string
+    {
+        return $this->fragment != '' ? '#'.$this->fragment : '';
     }
 }
