@@ -53,6 +53,28 @@ class ServerRequestFactory implements ServerRequestFactoryInterface
         );
     }
 
+    public function createServerRequestFromGlobals(): ServerRequestInterface
+    {
+        $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+        $headers = getallheaders() ?? [];
+        $uri = new Uri(
+            (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http') . '://' .
+            $_SERVER['HTTP_HOST'] .
+            $_SERVER['REQUEST_URI']
+        );
+        $body = new Stream('php://input', 'r');
+        $server_params = $_SERVER;
+        $cookies = $_COOKIE;
+        $query_params = $_GET;
+        $parsed_body = $_POST;
+        $uploaded_files = $this->getUploadedFilesFromServerParams(array_combine(
+            array_map(fn($key) => 'FILES_'.$key, array_keys($_FILES)),
+            $_FILES
+        ));
+
+        return new ServerRequest($method, $uri, $headers, $body, $server_params, $cookies, $query_params, $parsed_body, $uploaded_files);
+    }
+
     private function getHeadersFromServerParams(array $server_params): array
     {
         $headers = [];
