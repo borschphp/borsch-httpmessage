@@ -19,6 +19,7 @@
   "require": {
     "php": "^8.0",
     "ext-json": "*",
+    "ext-simplexml": "*",
     "psr/http-message": "^1.0",
     "psr/http-factory": "^1.0"
   },
