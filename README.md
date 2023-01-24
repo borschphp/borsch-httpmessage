@@ -27,10 +27,7 @@ You can use the factories provided by the package to create instances of these c
 ```php
 use Borsch\Http\Factory\{
     RequestFactory,
-    ResponseFactory,
-    StreamFactory,
-    UriFactory,
-    UploadedFileFactory
+    ResponseFactory
 };
 
 $requestFactory = new RequestFactory();
