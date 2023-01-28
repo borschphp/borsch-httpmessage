@@ -5,6 +5,7 @@
 
 namespace Borsch\Http;
 
+use Borsch\Http\Exception\InvalidArgumentException;
 use Psr\Http\Message\{RequestInterface, StreamInterface, UriInterface};
 
 /**
@@ -48,10 +49,10 @@ class Request extends Message implements RequestInterface
         return $this->request_target;
     }
 
-    public function withRequestTarget($requestTarget): static
+    public function withRequestTarget($request_target): static
     {
         $new = clone $this;
-        $new->request_target = $requestTarget;
+        $new->request_target = $request_target;
         return $new;
     }
 
@@ -60,23 +61,21 @@ class Request extends Message implements RequestInterface
         return $this->uri;
     }
 
-    public function withUri(UriInterface $uri, $preserveHost = false): static
+    public function withUri(UriInterface $uri, $preserve_host = false): static
     {
         $new = clone $this;
         $new->uri = $uri;
 
-        if (!$preserveHost) {
+        if (!$preserve_host) {
             return $new;
         }
 
         if (!$new->hasHeader('host')) {
-            throw new \InvalidArgumentException('host header not found');
+            throw InvalidArgumentException::notFound('host header');
         }
 
         $host = $new->getHeaderLine('host');
-        $new = $new->withoutHeader('host');
-        $new = $new->withUri($uri->withHost($host));
 
-        return $new;
+        return $new->withoutHeader('host')->withUri($uri->withHost($host));
     }
 }

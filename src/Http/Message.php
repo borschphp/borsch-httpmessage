@@ -5,7 +5,7 @@
 
 namespace Borsch\Http;
 
-use InvalidArgumentException;
+use Borsch\Http\Exception\InvalidArgumentException;
 use Psr\Http\Message\{MessageInterface, StreamInterface};
 
 /**
@@ -17,10 +17,11 @@ class Message implements MessageInterface
     protected array $headers_lowercase = [];
 
     public function __construct(
-        protected string $protocol = '1.1',
+        protected string           $protocol = '1.1',
         protected ?StreamInterface $body = null,
-        protected array $headers = []
-    ) {
+        protected array            $headers = []
+    )
+    {
         $this->body = $body ?? new Stream('php://temp', 'r+');
         $this->headers_lowercase = array_combine(
             array_keys(array_change_key_case($headers)),
@@ -36,7 +37,7 @@ class Message implements MessageInterface
     public function withProtocolVersion($version): static
     {
         if (!is_string($version) || !preg_match('/^\d+(\.\d+)?$/', $version)) {
-            throw new InvalidArgumentException('Invalid protocol version');
+            throw InvalidArgumentException::invalid('protocol version');
         }
 
         $new = clone $this;
@@ -53,7 +54,7 @@ class Message implements MessageInterface
     public function hasHeader($name): bool
     {
         if (!is_string($name)) {
-            throw new InvalidArgumentException('Header name must be a string');
+            throw InvalidArgumentException::mustBeAString('Header name');
         }
 
         return isset($this->headers_lowercase[strtolower($name)]);
@@ -62,7 +63,7 @@ class Message implements MessageInterface
     public function getHeader($name): array
     {
         if (!is_string($name)) {
-            throw new InvalidArgumentException('Header name must be a string');
+            throw InvalidArgumentException::mustBeAString('Header name');
         }
 
         $name_lower = strtolower($name);
@@ -76,7 +77,7 @@ class Message implements MessageInterface
     public function getHeaderLine($name): string
     {
         if (!is_string($name)) {
-            throw new InvalidArgumentException('Header name must be a string');
+            throw InvalidArgumentException::mustBeAString('Header name');
         }
 
         if (!$this->hasHeader($name)) {
@@ -89,18 +90,16 @@ class Message implements MessageInterface
     public function withHeader($name, $value): static
     {
         if (!is_string($name) || empty($name)) {
-            throw new InvalidArgumentException('Header name must be a string');
+            throw InvalidArgumentException::mustBeAString('Header name');
         }
 
         if (!is_string($value) && !is_array($value)) {
-            throw new InvalidArgumentException('Header value must be a string or an array of strings');
+            throw InvalidArgumentException::mustBeAStringOrAnArrayOfString('Header value');
         }
 
-        if (is_array($value)) {
-            foreach($value as $header) {
-                if(!is_string($header)) {
-                    throw new InvalidArgumentException('Header value must be a string or an array of strings');
-                }
+        foreach ((array)$value as $header) {
+            if (!is_string($header)) {
+                throw InvalidArgumentException::mustBeAStringOrAnArrayOfString('Header value');
             }
         }
 
@@ -116,33 +115,27 @@ class Message implements MessageInterface
     public function withAddedHeader($name, $value): static
     {
         if (!is_string($name) || empty($name)) {
-            throw new InvalidArgumentException('Invalid header name');
+            throw InvalidArgumentException::invalid('header name');
         }
 
         if (!is_string($value) && !is_array($value)) {
-            throw new InvalidArgumentException('Invalid header value');
+            throw InvalidArgumentException::invalid('header value');
         }
 
-        if (is_array($value)) {
-            foreach ($value as $header) {
-                if (!is_string($header)) {
-                    throw new InvalidArgumentException('Header value must be a string or an array of strings');
-                }
+        foreach ((array)$value as $header) {
+            if (!is_string($header)) {
+                throw InvalidArgumentException::mustBeAStringOrAnArrayOfString('Header value');
             }
         }
-        
+
         $name_lower = strtolower($name);
 
         $new = clone $this;
-        if (isset($new->headers_lowercase[$name_lower])) {
-            $new->headers[$new->headers_lowercase[$name_lower]] = array_merge(
-                $new->headers[$new->headers_lowercase[$name_lower]],
-                (array)$value
-            );
-        } else {
-            $new->headers_lowercase[$name_lower] = $name;
-            $new->headers[$name] = (array)$value;
-        }
+        $new->headers_lowercase[$name_lower] = $name;
+        $new->headers[$name] = array_merge(
+            $new->headers[$name] ?? [],
+            (array)$value
+        );
 
         return $new;
     }
@@ -150,7 +143,7 @@ class Message implements MessageInterface
     public function withoutHeader($name): static
     {
         if (!is_string($name) || empty($name)) {
-            throw new InvalidArgumentException('Invalid header name');
+            throw InvalidArgumentException::invalid('header name');
         }
 
         $name_lower = strtolower($name);
@@ -160,11 +153,7 @@ class Message implements MessageInterface
             return $new;
         }
 
-        foreach (array_keys($this->headers) as $key) {
-            if (strtolower($key) == $name_lower) {
-                unset($new->headers[$key]);
-            }
-        }
+        unset($new->headers[$new->headers_lowercase[$name_lower]]);
         unset($new->headers_lowercase[$name_lower]);
 
         return $new;

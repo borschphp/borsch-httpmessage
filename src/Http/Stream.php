@@ -5,10 +5,10 @@
 
 namespace Borsch\Http;
 
+use Borsch\Http\Exception\InvalidArgumentException;
+use Borsch\Http\Exception\RuntimeException;
 use Exception;
-use InvalidArgumentException;
 use Psr\Http\Message\StreamInterface;
-use RuntimeException;
 
 /**
  * Class Stream
@@ -36,7 +36,7 @@ class Stream implements StreamInterface
         try {
             $this->seek(0);
             return $this->getContents();
-        } catch (Exception $e) {
+        } catch (Exception) {
             return '';
         }
     }
@@ -85,12 +85,12 @@ class Stream implements StreamInterface
     public function tell(): int
     {
         if (!isset($this->resource)) {
-            throw new RuntimeException('No resource available; cannot tell position');
+            throw RuntimeException::noResourceAvailableCantDoAction(__METHOD__);
         }
 
         $position = ftell($this->resource);
         if ($position === false) {
-            throw new RuntimeException('Error occurred during tell operation');
+            throw RuntimeException::errorOccurredDuringMethodCall(__METHOD__);
         }
 
         return $position;
@@ -100,7 +100,7 @@ class Stream implements StreamInterface
     public function getMetadata($key = null)
     {
         if ($key !== null && !is_string($key)) {
-            throw new InvalidArgumentException('Key must be a string');
+            throw InvalidArgumentException::mustBeAString('Key');
         }
 
         if (!isset($this->resource)) {
@@ -119,16 +119,16 @@ class Stream implements StreamInterface
     public function read($length): string
     {
         if (!$this->isReadable()) {
-            throw new RuntimeException('Stream is not readable');
+            throw RuntimeException::streamIsNotReadable();
         }
 
         if (!is_int($length)) {
-            throw new InvalidArgumentException('Length must be an integer');
+            throw InvalidArgumentException::mustBeAnInteger('Length');
         }
 
         $data = fread($this->resource, $length);
         if ($data === false) {
-            throw new RuntimeException('Error occurred during read operation');
+            throw RuntimeException::errorOccurredDuringMethodCall(__METHOD__);
         }
 
         return $data;
@@ -155,26 +155,26 @@ class Stream implements StreamInterface
     public function seek($offset, $whence = SEEK_SET): void
     {
         if (!isset($this->resource)) {
-            throw new RuntimeException('No resource available; cannot seek');
+            throw RuntimeException::noResourceAvailableCantDoAction(__METHOD__);
         }
 
         if (!$this->isSeekable()) {
-            throw new RuntimeException('Stream is not seekable');
+            throw RuntimeException::streamIsNotSeekable();
         }
 
         if (!is_int($offset)) {
-            throw new InvalidArgumentException('Offset must be an integer');
+            throw InvalidArgumentException::mustBeAnInteger('Offset');
         }
 
         if (fseek($this->resource, $offset, $whence) === -1) {
-            throw new RuntimeException('Error occurred during seek operation');
+            throw RuntimeException::errorOccurredDuringMethodCall(__METHOD__);
         }
     }
 
     public function rewind(): void
     {
         if (!$this->isSeekable()) {
-            throw new RuntimeException('Stream is not seekable');
+            throw RuntimeException::streamIsNotSeekable();
         }
 
         $this->seek(0);
@@ -183,16 +183,16 @@ class Stream implements StreamInterface
     public function getContents(): string
     {
         if (!isset($this->resource)) {
-            throw new RuntimeException('No resource available; cannot read');
+            throw RuntimeException::noResourceAvailableCantDoAction(__METHOD__);
         }
 
         if (!$this->isReadable()) {
-            throw new RuntimeException('Stream is not readable');
+            throw RuntimeException::streamIsNotReadable();
         }
 
         $contents = stream_get_contents($this->resource);
         if ($contents === false) {
-            throw new RuntimeException('Error occurred during get contents operation');
+            throw RuntimeException::errorOccurredDuringMethodCall(__METHOD__);
         }
 
         return $contents;
@@ -212,20 +212,20 @@ class Stream implements StreamInterface
     public function write($string): int
     {
         if (!isset($this->resource)) {
-            throw new RuntimeException('No resource available; cannot write');
+            throw RuntimeException::noResourceAvailableCantDoAction(__METHOD__);
         }
 
         if (!$this->isWritable()) {
-            throw new RuntimeException('Stream is not writable');
+            throw RuntimeException::streamIsNotWritable();
         }
 
         if (!is_string($string)) {
-            throw new InvalidArgumentException('Data must be a string');
+            throw InvalidArgumentException::mustBeAString('Data');
         }
 
         $bytes = fwrite($this->resource, $string);
         if ($bytes === false) {
-            throw new RuntimeException('Error occurred during write operation');
+            throw RuntimeException::errorOccurredDuringMethodCall(__METHOD__);
         }
 
         return $bytes;

@@ -5,9 +5,9 @@
 
 namespace Borsch\Http;
 
+use Borsch\Http\Exception\RuntimeException;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UploadedFileInterface;
-use RuntimeException;
 
 /**
  * Class UploadedFile
@@ -15,53 +15,37 @@ use RuntimeException;
 class UploadedFile implements UploadedFileInterface
 {
 
-    protected StreamInterface $stream;
-
-    protected string $clientFilename;
-
-    protected string $clientMediaType;
-
-    protected int $error;
-
-    protected int $size;
-
     protected bool $has_been_moved = false;
 
     public function __construct(
-        StreamInterface $stream,
-        int $size,
-        int $error = UPLOAD_ERR_OK,
-        string $clientFilename = null,
-        string $clientMediaType = null
-    ) {
-        $this->stream = $stream;
-        $this->size = $size;
-        $this->error = $error;
-        $this->clientFilename = $clientFilename;
-        $this->clientMediaType = $clientMediaType;
-    }
+        protected StreamInterface $stream,
+        protected int $size,
+        protected int $error = UPLOAD_ERR_OK,
+        protected ?string $client_filename = null,
+        protected ?string $client_media_type = null
+    ) {}
 
     public function getStream(): StreamInterface
     {
         if ($this->stream->getSize() === null) {
-            throw new RuntimeException('Stream is missing, it probably has been moved already');
+            throw RuntimeException::streamMissingHasBeenMoved();
         }
 
         return $this->stream;
     }
 
-    public function moveTo($targetPath): void
+    public function moveTo($target_path): void
     {
         if ($this->has_been_moved) {
-            throw new RuntimeException('Uploaded file has already been moved');
+            throw RuntimeException::uploadedFileAlreadyMoved();
         }
 
-        if (!is_writable(dirname($targetPath))) {
-            throw new RuntimeException('Upload directory is not writable');
+        if (!is_writable(dirname($target_path))) {
+            throw RuntimeException::uploadDirIsNotWritable();
         }
 
         $this->stream->rewind();
-        $target = fopen($targetPath, 'wb');
+        $target = fopen($target_path, 'wb');
 
         while (!$this->stream->eof()) {
             fwrite($target, $this->stream->read(4096));
@@ -85,11 +69,11 @@ class UploadedFile implements UploadedFileInterface
 
     public function getClientFilename(): ?string
     {
-        return $this->clientFilename;
+        return $this->client_filename;
     }
 
-    public function getClientMediaType(): ?string
+    public function getClientMediatype(): ?string
     {
-        return $this->clientMediaType;
+        return $this->client_media_type;
     }
 }

@@ -5,7 +5,7 @@
 
 namespace Borsch\Http;
 
-use InvalidArgumentException;
+use Borsch\Http\Exception\InvalidArgumentException;
 use Psr\Http\Message\UriInterface;
 
 /**
@@ -15,7 +15,7 @@ class Uri implements UriInterface
 {
     protected string $scheme = '';
 
-    protected string $userInfo = '';
+    protected string $user_info = '';
 
     protected string $host = '';
 
@@ -32,44 +32,49 @@ class Uri implements UriInterface
         if ($uri !== '') {
             $parts = parse_url($uri);
             if ($parts === false) {
-                throw new InvalidArgumentException("Unable to parse URI: $uri");
+                throw InvalidArgumentException::unableToParseUri($uri);
             }
 
-            $this->scheme = isset($parts['scheme']) ? $parts['scheme'] : '';
-            $this->userInfo = isset($parts['user']) ? $parts['user'] : '';
-            $this->host = isset($parts['host']) ? $parts['host'] : '';
+            $this->scheme = $parts['scheme'] ?? '';
+            $this->user_info = $parts['user'] ?? '';
+            $this->host = $parts['host'] ?? '';
 
             if (isset($parts['port'])) {
                 if (!is_numeric($parts['port']) || $parts['port'] < 1 || $parts['port'] > 65535) {
-                    throw new InvalidArgumentException("Invalid port value: {$parts['port']}");
+                    throw InvalidArgumentException::invalid('port value: '.$parts['port']);
                 }
                 $this->port = (int)$parts['port'];
             } else {
                 $this->port = null;
             }
 
-            $this->path = isset($parts['path']) ? $parts['path'] : '';
-            $this->query = isset($parts['query']) ? $parts['query'] : '';
-            $this->fragment = isset($parts['fragment']) ? $parts['fragment'] : '';
+            $this->path = $parts['path'] ?? '';
+            $this->query = $parts['query'] ?? '';
+            $this->fragment = $parts['fragment'] ?? '';
         }
     }
 
     public function __toString(): string
     {
         $uri = '';
+
         if ($this->scheme !== '') {
-            $uri .= $this->scheme . ':';
+            $uri .= $this->scheme.':';
         }
+
         if ($this->getAuthority() !== '') {
-            $uri .= '//' . $this->getAuthority();
+            $uri .= '//'.$this->getAuthority();
         }
+
         $uri .= $this->path;
         if ($this->query !== '') {
-            $uri .= '?' . $this->query;
+            $uri .= '?'.$this->query;
         }
+
         if ($this->fragment !== '') {
-            $uri .= '#' . $this->fragment;
+            $uri .= '#'.$this->fragment;
         }
+
         return $uri;
     }
 
@@ -81,43 +86,48 @@ class Uri implements UriInterface
     public function withScheme($scheme): static
     {
         if (!is_string($scheme)) {
-            throw new InvalidArgumentException('Scheme must be a string');
+            throw InvalidArgumentException::mustBeAString('Scheme');
         }
 
         $new = clone $this;
         $new->scheme = $scheme;
+
         return $new;
     }
 
     public function getAuthority(): string
     {
         $authority = $this->host;
-        if ($this->userInfo !== '') {
-            $authority = $this->userInfo . '@' . $authority;
+
+        if ($this->user_info !== '') {
+            $authority = $this->user_info.'@'.$authority;
         }
+
         if ($this->port !== null) {
-            $authority .= ':' . $this->port;
+            $authority .= ':'.$this->port;
         }
+
         return $authority;
     }
 
     public function getUserInfo(): string
     {
-        return $this->userInfo;
+        return $this->user_info;
     }
 
     public function withUserInfo($user, $password = null): static
     {
         if (!is_string($user)) {
-            throw new InvalidArgumentException('User must be a string');
+            throw InvalidArgumentException::mustBeAString('User');
         }
 
         if (!is_string($password) && !is_null($password)) {
-            throw new InvalidArgumentException('Password must be a string');
+            throw InvalidArgumentException::mustBeAString('Password');
         }
 
         $new = clone $this;
-        $new->userInfo = $user . ($password ? ':' . $password : '');
+        $new->user_info = $user.($password ? ':'.$password : '');
+
         return $new;
     }
 
@@ -129,11 +139,12 @@ class Uri implements UriInterface
     public function withHost($host): static
     {
         if (!is_string($host)) {
-            throw new InvalidArgumentException('Host must be a string');
+            throw InvalidArgumentException::mustBeAString('Host');
         }
 
         $new = clone $this;
         $new->host = $host;
+
         return $new;
     }
 
@@ -145,11 +156,12 @@ class Uri implements UriInterface
     public function withPort($port): static
     {
         if ($port !== null && ($port < 1 || $port > 65535)) {
-            throw new \InvalidArgumentException("Invalid port: $port");
+            throw InvalidArgumentException::invalid('port: '.$port);
         }
 
         $new = clone $this;
-        $new->port = $port;
+        $new->port = (int)$port;
+
         return $new;
     }
 
@@ -161,11 +173,12 @@ class Uri implements UriInterface
     public function withPath($path): static
     {
         if (!is_string($path)) {
-            throw new InvalidArgumentException('Path must be a string');
+            throw InvalidArgumentException::mustBeAString('Path');
         }
 
         $new = clone $this;
         $new->path = $path;
+
         return $new;
     }
 
@@ -177,11 +190,12 @@ class Uri implements UriInterface
     public function withQuery($query): static
     {
         if (!is_string($query)) {
-            throw new InvalidArgumentException('Query must be a string');
+            throw InvalidArgumentException::mustBeAString('Query');
         }
 
         $new = clone $this;
         $new->query = $query;
+
         return $new;
     }
 
@@ -193,11 +207,12 @@ class Uri implements UriInterface
     public function withFragment($fragment): static
     {
         if (!is_string($fragment)) {
-            throw new InvalidArgumentException('Fragment must be a string');
+            throw InvalidArgumentException::mustBeAString('Fragment');
         }
 
         $new = clone $this;
         $new->fragment = $fragment;
+
         return $new;
     }
 }

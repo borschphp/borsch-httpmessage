@@ -5,7 +5,7 @@
 
 namespace Borsch\Http;
 
-use InvalidArgumentException;
+use Borsch\Http\Exception\InvalidArgumentException;
 use Psr\Http\Message\{ServerRequestInterface, StreamInterface, UploadedFileInterface, UriInterface};
 
 /**
@@ -16,8 +16,6 @@ class ServerRequest extends Message implements ServerRequestInterface
 
     protected array $attributes = [];
 
-    protected null|array|object $parsedBody;
-
     protected string $request_target;
 
     public function __construct(
@@ -25,16 +23,15 @@ class ServerRequest extends Message implements ServerRequestInterface
         protected UriInterface $uri,
         array $headers = [],
         StreamInterface $body = null,
-        protected array $serverParams = [],
+        protected array $server_params = [],
         protected array $cookies = [],
         protected array $queryParams = [],
         protected array $uploadedFiles = [],
-        $parsedBody = null,
+        protected null|array|object $parsed_body = null,
         string $protocol = '1.1'
     ) {
         parent::__construct($protocol, $body, $headers);
 
-        $this->parsedBody = $parsedBody;
         $this->request_target = $this->uri->getPath();
         if ($this->uri->getQuery()) {
             $this->request_target .= '?' . $uri->getQuery();
@@ -53,7 +50,7 @@ class ServerRequest extends Message implements ServerRequestInterface
 
     public function getServerParams(): array
     {
-        return $this->serverParams;
+        return $this->server_params;
     }
 
     public function getCookieParams(): array
@@ -71,9 +68,9 @@ class ServerRequest extends Message implements ServerRequestInterface
         return $this->uploadedFiles;
     }
 
-    public function getParsedBody()
+    public function getParsedBody(): object|array|null
     {
-        return $this->parsedBody;
+        return $this->parsed_body;
     }
 
     public function getAttributes(): array
@@ -89,7 +86,7 @@ class ServerRequest extends Message implements ServerRequestInterface
         return $new;
     }
 
-    public function withUri(UriInterface $uri, $preserveHost = false): ServerRequestInterface
+    public function withUri(UriInterface $uri, $preserve_host = false): ServerRequestInterface
     {
         $new = clone $this;
         $new->uri = $uri;
@@ -97,10 +94,10 @@ class ServerRequest extends Message implements ServerRequestInterface
         return $new;
     }
 
-    public function withServerParams(array $serverParams): ServerRequestInterface
+    public function withServerParams(array $server_params): ServerRequestInterface
     {
         $new = clone $this;
-        $new->serverParams = $serverParams;
+        $new->server_params = $server_params;
 
         return $new;
     }
@@ -121,12 +118,12 @@ class ServerRequest extends Message implements ServerRequestInterface
         return $new;
     }
 
-    public function withUploadedFiles(array $uploadedFiles): ServerRequestInterface
+    public function withUploadedFiles(array $uploaded_files): ServerRequestInterface
     {
-        $this->validateUploadedFiles($uploadedFiles);
+        $this->validateUploadedFiles($uploaded_files);
 
         $new = clone $this;
-        $new->uploadedFiles = $uploadedFiles;
+        $new->uploadedFiles = $uploaded_files;
 
         return $new;
     }
@@ -134,13 +131,17 @@ class ServerRequest extends Message implements ServerRequestInterface
     public function withParsedBody($data): ServerRequestInterface
     {
         $new = clone $this;
-        $new->parsedBody = $data;
+        $new->parsed_body = $data;
 
         return $new;
     }
 
     public function withAttribute($name, $value): ServerRequestInterface
     {
+        if (!is_string($name) || empty($name)) {
+            throw InvalidArgumentException::invalid('attribute name');
+        }
+
         $new = clone $this;
         $new->attributes[$name] = $value;
 
@@ -149,26 +150,31 @@ class ServerRequest extends Message implements ServerRequestInterface
 
     public function withoutAttribute($name): ServerRequestInterface
     {
+        if (!is_string($name) || empty($name)) {
+            throw InvalidArgumentException::invalid('attribute name');
+        }
+
         $new = clone $this;
         unset($new->attributes[$name]);
 
         return $new;
     }
 
-    protected function validateUploadedFiles(array $uploadedFiles)
+    protected function validateUploadedFiles(array $uploaded_files)
     {
-        foreach ($uploadedFiles as $file) {
+        foreach ($uploaded_files as $file) {
             if (!$file instanceof UploadedFileInterface) {
-                throw new InvalidArgumentException(sprintf(
-                    'Invalid value in uploaded files specification; must be an instance of %s',
-                    UploadedFileInterface::class
-                ));
+                throw InvalidArgumentException::invalidUploadedFile();
             }
         }
     }
 
     public function getAttribute($name, $default = null)
     {
+        if (!is_string($name) || empty($name)) {
+            throw InvalidArgumentException::invalid('attribute name');
+        }
+
         if (!array_key_exists($name, $this->attributes)) {
             return $default;
         }
@@ -181,16 +187,14 @@ class ServerRequest extends Message implements ServerRequestInterface
         return $this->request_target;
     }
 
-    public function withRequestTarget($requestTarget): ServerRequestInterface
+    public function withRequestTarget($request_target): ServerRequestInterface
     {
-        if (preg_match('#\s#', $requestTarget)) {
-            throw new InvalidArgumentException(
-                'Invalid request target provided; cannot contain whitespace'
-            );
+        if (preg_match('#\s#', $request_target)) {
+            throw InvalidArgumentException::invalid('request target provided; cannot contain whitespace');
         }
 
         $new = clone $this;
-        $new->request_target = $requestTarget;
+        $new->request_target = $request_target;
 
         return $new;
     }

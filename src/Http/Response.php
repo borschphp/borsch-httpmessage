@@ -51,11 +51,7 @@ class Response extends Message implements ResponseInterface
 
         $new = clone $this;
         $new->status_code = $code;
-        if (empty($reason_phrase)) {
-            $new->reason_phrase = self::getDefaultReasonPhrase($code);
-        } else {
-            $new->reason_phrase = $reason_phrase;
-        }
+        $new->reason_phrase = $reason_phrase ?: self::getDefaultReasonPhrase($code);
 
         return $new;
     }

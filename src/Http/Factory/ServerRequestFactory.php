@@ -6,9 +6,14 @@
 namespace Borsch\Http\Factory;
 
 use Exception;
-use InvalidArgumentException;
-use RuntimeException;
-use Borsch\Http\{ServerRequest, Stream, UploadedFile, Uri};
+use Borsch\Http\{
+    Exception\InvalidArgumentException,
+    Exception\RuntimeException,
+    ServerRequest,
+    Stream,
+    UploadedFile,
+    Uri
+};
 use Psr\Http\Message\{
     ServerRequestFactoryInterface,
     ServerRequestInterface,
@@ -26,7 +31,7 @@ class ServerRequestFactory implements ServerRequestFactoryInterface
     public function createServerRequest(string $method, $uri, array $server_params = []): ServerRequestInterface
     {
         if (!is_string($uri) && !$uri instanceof UriInterface) {
-            throw new InvalidArgumentException('Uri must be a string or an instance of UriInterface');
+            throw InvalidArgumentException::mustBeAStringOrAnInstanceOf('Uri', UriInterface::class);
         }
 
         if (!$uri instanceof UriInterface) {
@@ -58,8 +63,8 @@ class ServerRequestFactory implements ServerRequestFactoryInterface
         $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
         $headers = getallheaders() ?? [];
         $uri = new Uri(
-            (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http') . '://' .
-            $_SERVER['HTTP_HOST'] .
+            (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http').'://'.
+            $_SERVER['HTTP_HOST'].
             $_SERVER['REQUEST_URI']
         );
         $body = new Stream('php://input', 'r');
@@ -72,7 +77,17 @@ class ServerRequestFactory implements ServerRequestFactoryInterface
             $_FILES
         ));
 
-        return new ServerRequest($method, $uri, $headers, $body, $server_params, $cookies, $query_params, $parsed_body, $uploaded_files);
+        return new ServerRequest(
+            $method,
+            $uri,
+            $headers,
+            $body,
+            $server_params,
+            $cookies,
+            $query_params,
+            $parsed_body,
+            $uploaded_files
+        );
     }
 
     private function getHeadersFromServerParams(array $server_params): array
@@ -84,6 +99,7 @@ class ServerRequestFactory implements ServerRequestFactoryInterface
                 $headers[$name] = $value;
             }
         }
+
         return $headers;
     }
 
@@ -91,6 +107,7 @@ class ServerRequestFactory implements ServerRequestFactoryInterface
     {
         $stream = new Stream('php://temp', 'wb+');
         $stream->write($server_params['php://input'] ?? '');
+
         return $stream;
     }
 
@@ -124,6 +141,7 @@ class ServerRequestFactory implements ServerRequestFactoryInterface
         if (isset($server_params['request_body'])) {
             return $server_params['request_body'];
         }
+
         return [];
     }
 
@@ -133,17 +151,17 @@ class ServerRequestFactory implements ServerRequestFactoryInterface
         $missing_keys = array_diff($required_keys, array_keys($file));
 
         if (!empty($missing_keys)) {
-            throw new InvalidArgumentException('Missing keys in file data: ' . implode(', ', $missing_keys));
+            throw new InvalidArgumentException('Missing keys in file data: '.implode(', ', $missing_keys));
         }
 
         if ($file['error'] !== UPLOAD_ERR_OK) {
-            throw new RuntimeException('File error: ' . $file['error']);
+            throw RuntimeException::fileError($file['error']);
         }
 
         try {
             $stream = new Stream($file['tmp_name'], 'rb');
         } catch (Exception $e) {
-            throw new RuntimeException('Unable to create stream: ' . $e->getMessage());
+            throw RuntimeException::unableToCreateStream($e->getMessage());
         }
 
         return new UploadedFile(
