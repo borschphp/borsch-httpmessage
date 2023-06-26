@@ -85,6 +85,10 @@ class Uri implements UriInterface
 
     public function withScheme(string $scheme): static
     {
+        if ($this->scheme === $scheme) {
+            return $this;
+        }
+
         $new = clone $this;
         $new->scheme = $scheme;
 
@@ -113,10 +117,6 @@ class Uri implements UriInterface
 
     public function withUserInfo(string $user, ?string $password = null): static
     {
-        if (!is_string($password) && !is_null($password)) {
-            throw InvalidArgumentException::mustBeAString('Password');
-        }
-
         $new = clone $this;
         $new->user_info = $user.($password ? ':'.$password : '');
 
@@ -130,6 +130,10 @@ class Uri implements UriInterface
 
     public function withHost(string $host): static
     {
+        if ($this->host === $host) {
+            return $this;
+        }
+
         $new = clone $this;
         $new->host = $host;
 
@@ -143,6 +147,10 @@ class Uri implements UriInterface
 
     public function withPort(?int $port): static
     {
+        if ($this->port === $port) {
+            return $this;
+        }
+
         if ($port !== null && ($port < 1 || $port > 65535)) {
             throw InvalidArgumentException::invalid('port: '.$port);
         }
@@ -160,6 +168,10 @@ class Uri implements UriInterface
 
     public function withPath(string $path): static
     {
+        if ($this->path === $path) {
+            return $this;
+        }
+
         $new = clone $this;
         $new->path = $path;
 
@@ -173,6 +185,10 @@ class Uri implements UriInterface
 
     public function withQuery(string $query): static
     {
+        if ($this->query === $query) {
+            return $this;
+        }
+
         $new = clone $this;
         $new->query = $query;
 
@@ -186,6 +202,10 @@ class Uri implements UriInterface
 
     public function withFragment(string $fragment): static
     {
+        if ($this->fragment === $fragment) {
+            return $this;
+        }
+
         $new = clone $this;
         $new->fragment = $fragment;
 

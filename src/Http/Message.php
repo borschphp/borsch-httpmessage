@@ -36,8 +36,8 @@ class Message implements MessageInterface
 
     public function withProtocolVersion(string $version): static
     {
-        if (!preg_match('/^\d+(\.\d+)?$/', $version)) {
-            throw InvalidArgumentException::invalid('protocol version');
+        if ($this->protocol === $version) {
+            return $this;
         }
 
         $new = clone $this;
@@ -135,14 +135,16 @@ class Message implements MessageInterface
         }
 
         $name_lower = strtolower($name);
-
-        $new = clone $this;
-        if (!isset($new->headers_lowercase[$name_lower])) {
-            return $new;
+        if (!isset($this->headers_lowercase[$name_lower])) {
+            return $this;
         }
 
-        unset($new->headers[$new->headers_lowercase[$name_lower]]);
-        unset($new->headers_lowercase[$name_lower]);
+        $new = clone $this;
+
+        unset(
+            $new->headers[$new->headers_lowercase[$name_lower]],
+            $new->headers_lowercase[$name_lower]
+        );
 
         return $new;
     }

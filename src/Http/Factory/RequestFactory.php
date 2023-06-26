@@ -19,14 +19,6 @@ class RequestFactory implements RequestFactoryInterface
      */
     public function createRequest(string $method, $uri): RequestInterface
     {
-        if (!is_string($uri) && !$uri instanceof UriInterface) {
-            throw InvalidArgumentException::mustBeAStringOrAnInstanceOf('Uri', UriInterface::class);
-        }
-
-        if (!$uri instanceof UriInterface) {
-            $uri = new Uri($uri);
-        }
-
         return new Request($method, $uri);
     }
 }

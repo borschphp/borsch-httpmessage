@@ -29,13 +29,6 @@ test('should return the request method', function () {
     expect($this->server_request->getMethod())->toBe('GET');
 });
 
-test('should return a new instance even if the method is the same', function () {
-    $new_request = $this->server_request->withMethod('GET');
-
-    expect($this->server_request)->not->toBe($new_request)
-        ->and($this->server_request->getMethod())->toBe($new_request->getMethod());
-});
-
 test('should return a new instance with the specified method', function () {
     $new_request = $this->server_request->withMethod('POST');
     expect($new_request->getMethod())->toBe('POST')
@@ -115,13 +108,6 @@ test('should return the upload files', function () {
 test('should return a new instance with the new protocol version', function () {
     $request = $this->server_request->withProtocolVersion('2.0');
     expect($request->getProtocolVersion())->toBe('2.0');
-});
-
-test('should return a new instance even if the protocol version is the same', function () {
-    $request = $this->server_request->withProtocolVersion('1.1');
-    $new_request = $this->server_request->withProtocolVersion('1.1');
-    expect($request)->not->toBe($new_request)
-        ->and($request->getProtocolVersion())->toBe($new_request->getProtocolVersion());
 });
 
 test('should return a new instance with the new cookie params', function () {
