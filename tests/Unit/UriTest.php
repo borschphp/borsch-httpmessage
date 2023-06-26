@@ -33,7 +33,7 @@ test('should return a new instance with the specified scheme', function () {
 test('withScheme() should throw InvalidArgumentException when passed a non-string', function () {
     $uri = new Uri();
     $uri->withScheme([]);
-})->throws(InvalidArgumentException::class);
+})->throws(TypeError::class);
 
 test('should return a new instance with the specified user info', function () {
     $new_uri = $this->uri->withUserInfo('user:password');
@@ -44,7 +44,7 @@ test('should return a new instance with the specified user info', function () {
 test('withUserInfo() should throw InvalidArgumentException when passed a non-string', function () {
     $uri = new Uri();
     $uri->withUserInfo([]);
-})->throws(InvalidArgumentException::class);
+})->throws(TypeError::class);
 
 test('should return a new instance with the specified host', function () {
     $new_uri = $this->uri->withHost('example.org');
@@ -55,7 +55,7 @@ test('should return a new instance with the specified host', function () {
 test('withHost() should throw InvalidArgumentException when passed a non-string', function () {
     $uri = new Uri();
     $uri->withHost([]);
-})->throws(InvalidArgumentException::class);
+})->throws(TypeError::class);
 
 test('should return a new instance with the specified port', function () {
     $new_uri = $this->uri->withPort(80);
@@ -72,7 +72,7 @@ test('should return a new instance with the specified path', function () {
 test('withPath() should throw InvalidArgumentException when passed a non-string', function () {
     $uri = new Uri();
     $uri->withPath([]);
-})->throws(InvalidArgumentException::class);
+})->throws(TypeError::class);
 
 test('should return a new instance with the specified query', function () {
     $new_uri = $this->uri->withQuery('newquery=newvalue');
@@ -83,7 +83,7 @@ test('should return a new instance with the specified query', function () {
 test('withQuery() should throw InvalidArgumentException when passed a non-string', function () {
     $uri = new Uri();
     $uri->withQuery([]);
-})->throws(InvalidArgumentException::class);
+})->throws(TypeError::class);
 
 test('should return a new instance with the specified fragment', function () {
     $new_uri = $this->uri->withFragment('newfragment');
@@ -94,7 +94,7 @@ test('should return a new instance with the specified fragment', function () {
 test('withFragment() should throw InvalidArgumentException when passed a non-string', function () {
     $uri = new Uri();
     $uri->withFragment([]);
-})->throws(InvalidArgumentException::class);
+})->throws(TypeError::class);
 
 test('should return a new instance even if the scheme, user info, host, port, path, query and fragment are the same', function () {
     $new_uri = $this->uri->withScheme('https')->withUserInfo('')->withHost('example.com')->withPort(8080)->withPath('/path')->withQuery('query=value')->withFragment('fragment');

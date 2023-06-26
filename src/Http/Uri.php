@@ -83,12 +83,8 @@ class Uri implements UriInterface
         return $this->scheme;
     }
 
-    public function withScheme($scheme): static
+    public function withScheme(string $scheme): static
     {
-        if (!is_string($scheme)) {
-            throw InvalidArgumentException::mustBeAString('Scheme');
-        }
-
         $new = clone $this;
         $new->scheme = $scheme;
 
@@ -115,12 +111,8 @@ class Uri implements UriInterface
         return $this->user_info;
     }
 
-    public function withUserInfo($user, $password = null): static
+    public function withUserInfo(string $user, ?string $password = null): static
     {
-        if (!is_string($user)) {
-            throw InvalidArgumentException::mustBeAString('User');
-        }
-
         if (!is_string($password) && !is_null($password)) {
             throw InvalidArgumentException::mustBeAString('Password');
         }
@@ -136,12 +128,8 @@ class Uri implements UriInterface
         return $this->host;
     }
 
-    public function withHost($host): static
+    public function withHost(string $host): static
     {
-        if (!is_string($host)) {
-            throw InvalidArgumentException::mustBeAString('Host');
-        }
-
         $new = clone $this;
         $new->host = $host;
 
@@ -153,7 +141,7 @@ class Uri implements UriInterface
         return $this->port;
     }
 
-    public function withPort($port): static
+    public function withPort(?int $port): static
     {
         if ($port !== null && ($port < 1 || $port > 65535)) {
             throw InvalidArgumentException::invalid('port: '.$port);
@@ -170,12 +158,8 @@ class Uri implements UriInterface
         return $this->path;
     }
 
-    public function withPath($path): static
+    public function withPath(string $path): static
     {
-        if (!is_string($path)) {
-            throw InvalidArgumentException::mustBeAString('Path');
-        }
-
         $new = clone $this;
         $new->path = $path;
 
@@ -187,12 +171,8 @@ class Uri implements UriInterface
         return $this->query;
     }
 
-    public function withQuery($query): static
+    public function withQuery(string $query): static
     {
-        if (!is_string($query)) {
-            throw InvalidArgumentException::mustBeAString('Query');
-        }
-
         $new = clone $this;
         $new->query = $query;
 
@@ -204,12 +184,8 @@ class Uri implements UriInterface
         return $this->fragment;
     }
 
-    public function withFragment($fragment): static
+    public function withFragment(string $fragment): static
     {
-        if (!is_string($fragment)) {
-            throw InvalidArgumentException::mustBeAString('Fragment');
-        }
-
         $new = clone $this;
         $new->fragment = $fragment;
 

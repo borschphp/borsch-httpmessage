@@ -34,7 +34,7 @@ class UploadedFile implements UploadedFileInterface
         return $this->stream;
     }
 
-    public function moveTo($target_path): void
+    public function moveTo(string $target_path): void
     {
         if ($this->has_been_moved) {
             throw RuntimeException::uploadedFileAlreadyMoved();

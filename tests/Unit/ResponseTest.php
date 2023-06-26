@@ -31,7 +31,7 @@ test('withStatus should throw InvalidArgumentException with invalid status code 
 
 test('withStatus should throw InvalidArgumentException with invalid reason phrase', function () {
     $this->response->withStatus(200, []);
-})->throws(InvalidArgumentException::class);
+})->throws(TypeError::class);
 
 test('withStatus should return new instance with updated status code and reason phrase', function () {
     $new = $this->response->withStatus(404, 'Not Found');

@@ -15,7 +15,7 @@ class InvalidArgumentException extends \InvalidArgumentException
 
     public static function mustBeAString(string $name): static
     {
-        return new static(sprintf('%s must be a string.', $name));
+        return new static(sprintf('%s must be a non-empty string.', $name));
     }
 
     public static function mustBeAnInteger(string $name): static

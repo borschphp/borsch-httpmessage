@@ -63,7 +63,7 @@ test('withBody method', function () {
 
 test('withProtocolVersion method with invalid input', function () {
     $this->message->withProtocolVersion(2);
-})->throws(InvalidArgumentException::class);
+})->throws(TypeError::class);
 
 test('withHeader method with invalid input', function () {
     $this->message->withHeader('', 'application/json');
@@ -81,4 +81,4 @@ test('withHeader method with extra spaces', function () {
 
 test('withoutHeader method with non-string input', function () {
     $this->message->withoutHeader(1);
-})->throws(InvalidArgumentException::class);
+})->throws(TypeError::class);

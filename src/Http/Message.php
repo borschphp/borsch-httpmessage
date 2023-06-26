@@ -34,9 +34,9 @@ class Message implements MessageInterface
         return $this->protocol;
     }
 
-    public function withProtocolVersion($version): static
+    public function withProtocolVersion(string $version): static
     {
-        if (!is_string($version) || !preg_match('/^\d+(\.\d+)?$/', $version)) {
+        if (!preg_match('/^\d+(\.\d+)?$/', $version)) {
             throw InvalidArgumentException::invalid('protocol version');
         }
 
@@ -51,21 +51,13 @@ class Message implements MessageInterface
         return $this->headers;
     }
 
-    public function hasHeader($name): bool
+    public function hasHeader(string $name): bool
     {
-        if (!is_string($name)) {
-            throw InvalidArgumentException::mustBeAString('Header name');
-        }
-
         return isset($this->headers_lowercase[strtolower($name)]);
     }
 
-    public function getHeader($name): array
+    public function getHeader(string $name): array
     {
-        if (!is_string($name)) {
-            throw InvalidArgumentException::mustBeAString('Header name');
-        }
-
         $name_lower = strtolower($name);
         if (!$this->hasHeader($name_lower)) {
             return [];
@@ -74,12 +66,8 @@ class Message implements MessageInterface
         return $this->headers[$this->headers_lowercase[$name_lower]] ?? [];
     }
 
-    public function getHeaderLine($name): string
+    public function getHeaderLine(string $name): string
     {
-        if (!is_string($name)) {
-            throw InvalidArgumentException::mustBeAString('Header name');
-        }
-
         if (!$this->hasHeader($name)) {
             return '';
         }
@@ -87,9 +75,9 @@ class Message implements MessageInterface
         return implode(',', $this->getHeader($name));
     }
 
-    public function withHeader($name, $value): static
+    public function withHeader(string $name, $value): static
     {
-        if (!is_string($name) || empty($name)) {
+        if (empty($name)) {
             throw InvalidArgumentException::mustBeAString('Header name');
         }
 
@@ -112,9 +100,9 @@ class Message implements MessageInterface
         return $new;
     }
 
-    public function withAddedHeader($name, $value): static
+    public function withAddedHeader(string $name, $value): static
     {
-        if (!is_string($name) || empty($name)) {
+        if (empty($name)) {
             throw InvalidArgumentException::invalid('header name');
         }
 
@@ -140,9 +128,9 @@ class Message implements MessageInterface
         return $new;
     }
 
-    public function withoutHeader($name): static
+    public function withoutHeader(string $name): static
     {
-        if (!is_string($name) || empty($name)) {
+        if (empty($name)) {
             throw InvalidArgumentException::invalid('header name');
         }
 

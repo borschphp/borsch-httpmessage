@@ -11,12 +11,10 @@ use Psr\Http\Message\{ServerRequestInterface, StreamInterface, UploadedFileInter
 /**
  * Class ServerRequest
  */
-class ServerRequest extends Message implements ServerRequestInterface
+class ServerRequest extends Request implements ServerRequestInterface
 {
 
     protected array $attributes = [];
-
-    protected string $request_target;
 
     public function __construct(
         protected string $method,
@@ -30,12 +28,7 @@ class ServerRequest extends Message implements ServerRequestInterface
         protected null|array|object $parsed_body = null,
         string $protocol = '1.1'
     ) {
-        parent::__construct($protocol, $body, $headers);
-
-        $this->request_target = $this->uri->getPath();
-        if ($this->uri->getQuery()) {
-            $this->request_target .= '?' . $uri->getQuery();
-        }
+        parent::__construct($method, $uri, $protocol, $body, $headers);
     }
 
     public function getMethod(): string
@@ -78,30 +71,6 @@ class ServerRequest extends Message implements ServerRequestInterface
         return $this->attributes;
     }
 
-    public function withMethod($method): ServerRequestInterface
-    {
-        $new = clone $this;
-        $new->method = $method;
-
-        return $new;
-    }
-
-    public function withUri(UriInterface $uri, $preserve_host = false): ServerRequestInterface
-    {
-        $new = clone $this;
-        $new->uri = $uri;
-
-        return $new;
-    }
-
-    public function withServerParams(array $server_params): ServerRequestInterface
-    {
-        $new = clone $this;
-        $new->server_params = $server_params;
-
-        return $new;
-    }
-
     public function withCookieParams(array $cookies): ServerRequestInterface
     {
         $new = clone $this;
@@ -136,9 +105,9 @@ class ServerRequest extends Message implements ServerRequestInterface
         return $new;
     }
 
-    public function withAttribute($name, $value): ServerRequestInterface
+    public function withAttribute(string $name, $value): ServerRequestInterface
     {
-        if (!is_string($name) || empty($name)) {
+        if (empty($name)) {
             throw InvalidArgumentException::invalid('attribute name');
         }
 
@@ -148,19 +117,15 @@ class ServerRequest extends Message implements ServerRequestInterface
         return $new;
     }
 
-    public function withoutAttribute($name): ServerRequestInterface
+    public function withoutAttribute(string $name): ServerRequestInterface
     {
-        if (!is_string($name) || empty($name)) {
-            throw InvalidArgumentException::invalid('attribute name');
-        }
-
         $new = clone $this;
         unset($new->attributes[$name]);
 
         return $new;
     }
 
-    protected function validateUploadedFiles(array $uploaded_files)
+    protected function validateUploadedFiles(array $uploaded_files): void
     {
         foreach ($uploaded_files as $file) {
             if (!$file instanceof UploadedFileInterface) {
@@ -169,12 +134,8 @@ class ServerRequest extends Message implements ServerRequestInterface
         }
     }
 
-    public function getAttribute($name, $default = null)
+    public function getAttribute(string $name, $default = null)
     {
-        if (!is_string($name) || empty($name)) {
-            throw InvalidArgumentException::invalid('attribute name');
-        }
-
         if (!array_key_exists($name, $this->attributes)) {
             return $default;
         }
@@ -185,17 +146,5 @@ class ServerRequest extends Message implements ServerRequestInterface
     public function getRequestTarget(): string
     {
         return $this->request_target;
-    }
-
-    public function withRequestTarget($request_target): ServerRequestInterface
-    {
-        if (preg_match('#\s#', $request_target)) {
-            throw InvalidArgumentException::invalid('request target provided; cannot contain whitespace');
-        }
-
-        $new = clone $this;
-        $new->request_target = $request_target;
-
-        return $new;
     }
 }

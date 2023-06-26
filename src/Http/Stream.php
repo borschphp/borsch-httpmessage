@@ -97,7 +97,7 @@ class Stream implements StreamInterface
     }
 
 
-    public function getMetadata($key = null)
+    public function getMetadata(?string $key = null)
     {
         if ($key !== null && !is_string($key)) {
             throw InvalidArgumentException::mustBeAString('Key');
@@ -116,14 +116,10 @@ class Stream implements StreamInterface
         return $meta[$key] ?? null;
     }
 
-    public function read($length): string
+    public function read(int $length): string
     {
         if (!$this->isReadable()) {
             throw RuntimeException::streamIsNotReadable();
-        }
-
-        if (!is_int($length)) {
-            throw InvalidArgumentException::mustBeAnInteger('Length');
         }
 
         $data = fread($this->resource, $length);
@@ -152,7 +148,7 @@ class Stream implements StreamInterface
         return strpbrk($this->getMetadata('mode'), 'waxc+') !== false;
     }
 
-    public function seek($offset, $whence = SEEK_SET): void
+    public function seek(int $offset, int $whence = SEEK_SET): void
     {
         if (!isset($this->resource)) {
             throw RuntimeException::noResourceAvailableCantDoAction(__METHOD__);
@@ -160,10 +156,6 @@ class Stream implements StreamInterface
 
         if (!$this->isSeekable()) {
             throw RuntimeException::streamIsNotSeekable();
-        }
-
-        if (!is_int($offset)) {
-            throw InvalidArgumentException::mustBeAnInteger('Offset');
         }
 
         if (fseek($this->resource, $offset, $whence) === -1) {
@@ -209,7 +201,7 @@ class Stream implements StreamInterface
     }
 
 
-    public function write($string): int
+    public function write(string $string): int
     {
         if (!isset($this->resource)) {
             throw RuntimeException::noResourceAvailableCantDoAction(__METHOD__);
@@ -217,10 +209,6 @@ class Stream implements StreamInterface
 
         if (!$this->isWritable()) {
             throw RuntimeException::streamIsNotWritable();
-        }
-
-        if (!is_string($string)) {
-            throw InvalidArgumentException::mustBeAString('Data');
         }
 
         $bytes = fwrite($this->resource, $string);

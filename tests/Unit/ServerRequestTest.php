@@ -92,12 +92,6 @@ test('should return the uploaded files', function () {
     expect($this->server_request->getUploadedFiles())->toBe([]);
 });
 
-test('should return a new instance with the specified server params', function () {
-    $new_request = $this->server_request->withServerParams(['test' => 'value']);
-    expect($new_request->getServerParams())->toBe(['test' => 'value'])
-        ->and($this->server_request->getServerParams())->toBe([]);
-});
-
 test('should return the cookies', function () {
     expect($this->server_request->getCookieParams())->toBe([]);
 });

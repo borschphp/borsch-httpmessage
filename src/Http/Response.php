@@ -36,17 +36,13 @@ class Response extends Message implements ResponseInterface
         return $this->reason_phrase;
     }
 
-    public function withStatus($code, $reason_phrase = ''): ResponseInterface
+    public function withStatus(int $code, string $reason_phrase = ''): ResponseInterface
     {
         if ($code < 100 || $code > 599) {
             throw new InvalidArgumentException(sprintf(
                 'Invalid status code "%s"; must be an integer between 100 and 599',
                 $code
             ));
-        }
-
-        if (!is_string($reason_phrase)) {
-            throw new InvalidArgumentException('Reason phrase must be a string');
         }
 
         $new = clone $this;

@@ -37,7 +37,7 @@ class Request extends Message implements RequestInterface
         return $this->method;
     }
 
-    public function withMethod($method): static
+    public function withMethod(string $method): static
     {
         $new = clone $this;
         $new->method = $method;
@@ -49,7 +49,7 @@ class Request extends Message implements RequestInterface
         return $this->request_target;
     }
 
-    public function withRequestTarget($request_target): static
+    public function withRequestTarget(string $request_target): static
     {
         $new = clone $this;
         $new->request_target = $request_target;
@@ -61,7 +61,7 @@ class Request extends Message implements RequestInterface
         return $this->uri;
     }
 
-    public function withUri(UriInterface $uri, $preserve_host = false): static
+    public function withUri(UriInterface $uri, bool $preserve_host = false): static
     {
         $new = clone $this;
         $new->uri = $uri;
