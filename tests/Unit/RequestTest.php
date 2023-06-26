@@ -32,13 +32,6 @@ it('should return the request method', function () {
     expect($this->request->getMethod())->toBe('GET');
 });
 
-test('should return a new instance even if the method is the same', function () {
-    $new_request = $this->request->withMethod('GET');
-
-    expect($this->request)->not->toBe($new_request)
-        ->and($this->request->getMethod())->toBe($new_request->getMethod());
-});
-
 it('should return a new instance with the specified method', function () {
     $new_request = $this->request->withMethod('POST');
     expect($new_request->getMethod())->toBe('POST')

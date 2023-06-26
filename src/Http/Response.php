@@ -16,14 +16,12 @@ class Response extends Message implements ResponseInterface
 
     public function __construct(
         protected int $status_code = 200,
-        protected string $reason_phrase = '',
+        protected ?string $reason_phrase = null,
         ?Stream $body = null,
         array $headers = []
     ) {
         parent::__construct('1.1', $body, $headers);
-        if (empty($this->reason_phrase)) {
-            $this->reason_phrase = self::getDefaultReasonPhrase($this->status_code);
-        }
+        $this->reason_phrase = $reason_phrase ?: self::getDefaultReasonPhrase($this->status_code);
     }
 
     public function getStatusCode(): int
@@ -38,6 +36,10 @@ class Response extends Message implements ResponseInterface
 
     public function withStatus(int $code, string $reason_phrase = ''): ResponseInterface
     {
+        if ($this->status_code === $code && $this->reason_phrase === $reason_phrase) {
+            return $this;
+        }
+
         if ($code < 100 || $code > 599) {
             throw new InvalidArgumentException(sprintf(
                 'Invalid status code "%s"; must be an integer between 100 and 599',

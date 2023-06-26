@@ -30,31 +30,12 @@ class ServerRequestFactory implements ServerRequestFactoryInterface
 
     public function createServerRequest(string $method, $uri, array $server_params = []): ServerRequestInterface
     {
-        if (!is_string($uri) && !$uri instanceof UriInterface) {
-            throw InvalidArgumentException::mustBeAStringOrAnInstanceOf('Uri', UriInterface::class);
-        }
-
-        if (!$uri instanceof UriInterface) {
-            $uri = new Uri($uri);
-        }
-
-        $headers = $this->getHeadersFromServerParams($server_params);
-        $body = $this->getStreamFromServerParams($server_params);
-        $cookies = $this->getCookiesFromServerParams($server_params);
-        $queryParams = $this->getQueryParamsFromUri($uri);
-        $uploadedFiles = $this->getUploadedFilesFromServerParams($server_params);
-        $parsedBody = $this->getParsedBodyFromServerParams($server_params);
-
         return new ServerRequest(
             $method,
             $uri,
-            $headers,
-            $body,
-            $server_params,
-            $cookies,
-            $queryParams,
-            $uploadedFiles,
-            $parsedBody
+            [],
+            null,
+            $server_params
         );
     }
 

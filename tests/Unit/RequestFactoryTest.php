@@ -20,6 +20,6 @@ it('should set the request URI', function () {
     expect($request->getUri()->__toString())->toBe('http://example.com/');
 });
 
-it('should throw an InvalidArgumentException when creating a request with invalid URI', function () {
+it('should throw a TypeError when creating a request with invalid URI', function () {
     $this->factory->createRequest('GET', []);
-})->throws(InvalidArgumentException::class);
+})->throws(TypeError::class);

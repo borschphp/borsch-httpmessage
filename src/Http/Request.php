@@ -18,16 +18,20 @@ class Request extends Message implements RequestInterface
 
     public function __construct(
         protected string $method,
-        protected UriInterface $uri,
+        protected string|UriInterface $uri,
         string $protocol = '1.1',
         StreamInterface $body = null,
         array $headers = []
     ) {
         parent::__construct($protocol, $body, $headers);
 
+        if (!$this->uri instanceof UriInterface) {
+            $this->uri = new Uri($uri);
+        }
+
         $this->request_target = $this->uri->getPath();
         if ($this->uri->getQuery()) {
-            $this->request_target .= '?' . $uri->getQuery();
+            $this->request_target .= '?' . $this->uri->getQuery();
         }
     }
 
@@ -39,6 +43,10 @@ class Request extends Message implements RequestInterface
 
     public function withMethod(string $method): static
     {
+        if ($this->method === $method) {
+            return $this;
+        }
+
         $new = clone $this;
         $new->method = $method;
         return $new;
@@ -51,6 +59,10 @@ class Request extends Message implements RequestInterface
 
     public function withRequestTarget(string $request_target): static
     {
+        if ($this->request_target === $request_target) {
+            return $this;
+        }
+
         $new = clone $this;
         $new->request_target = $request_target;
         return $new;
@@ -63,6 +75,10 @@ class Request extends Message implements RequestInterface
 
     public function withUri(UriInterface $uri, bool $preserve_host = false): static
     {
+        if ($this->uri === $uri) {
+            return $this;
+        }
+
         $new = clone $this;
         $new->uri = $uri;
 

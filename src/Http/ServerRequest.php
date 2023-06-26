@@ -18,7 +18,7 @@ class ServerRequest extends Request implements ServerRequestInterface
 
     public function __construct(
         protected string $method,
-        protected UriInterface $uri,
+        protected string|UriInterface $uri,
         array $headers = [],
         StreamInterface $body = null,
         protected array $server_params = [],
