@@ -42,6 +42,14 @@ test('withAddedHeader method', function () {
         ->and($new_message->getHeaderLine('Content-Type'))->toBe('application/json');
 });
 
+test('withAddedHeader method with different case headers', function () {
+    $new_message = $this->message->withAddedHeader('Content-Type', 'application/json');
+    $new_message = $new_message->withAddedHeader('Content-Type', 'application/xml');
+    expect($new_message->hasHeader('Content-Type'))->toBeTrue()
+        ->and($new_message->getHeader('Content-Type'))->toBe(['application/json', 'application/xml'])
+        ->and($new_message->getHeaderLine('Content-Type'))->toBe('application/json,application/xml');
+});
+
 test('withoutHeader method', function () {
     $new_message = $this->message->withHeader('Content-Type', 'application/json')->withoutHeader('Content-Type');
     expect($new_message->hasHeader('Content-Type'))->toBeFalse()
