@@ -24,7 +24,7 @@ class Message implements MessageInterface
     {
         $this->body = $body ?? new Stream('php://temp', 'r+');
         $this->headers_lowercase = array_combine(
-            array_keys(array_change_key_case($headers)),
+            array_keys(array_change_key_case($this->headers)),
             array_keys($this->headers)
         );
     }
@@ -120,7 +120,7 @@ class Message implements MessageInterface
 
         $new = clone $this;
         $new->headers_lowercase[$name_lower] = $name;
-        $new->headers[$name] = array_merge(
+        $new->headers[$new->headers_lowercase[$name_lower]] = array_merge(
             $new->headers[$name] ?? [],
             (array)$value
         );
