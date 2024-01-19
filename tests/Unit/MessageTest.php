@@ -1,5 +1,6 @@
 <?php declare(strict_types=1);
 
+use Borsch\Http\Header;
 use Borsch\Http\Stream;
 use Psr\Http\Message\StreamInterface;
 

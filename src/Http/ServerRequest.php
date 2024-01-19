@@ -7,6 +7,7 @@ namespace Borsch\Http;
 
 use Borsch\Http\Exception\InvalidArgumentException;
 use Psr\Http\Message\{ServerRequestInterface, StreamInterface, UploadedFileInterface, UriInterface};
+use function array_key_exists;
 
 /**
  * Class ServerRequest

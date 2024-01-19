@@ -31,7 +31,7 @@ class Request extends Message implements RequestInterface
 
         $this->request_target = $this->uri->getPath();
         if ($this->uri->getQuery()) {
-            $this->request_target .= '?' . $this->uri->getQuery();
+            $this->request_target = "$this->request_target?{$this->uri->getQuery()}";
         }
     }
 
