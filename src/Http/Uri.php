@@ -7,6 +7,7 @@ namespace Borsch\Http;
 
 use Borsch\Http\Exception\InvalidArgumentException;
 use Psr\Http\Message\UriInterface;
+use function parse_url, is_numeric;
 
 /**
  * Class Uri
@@ -59,20 +60,20 @@ class Uri implements UriInterface
         $uri = '';
 
         if ($this->scheme !== '') {
-            $uri .= $this->scheme.':';
+            $uri = "$this->scheme:";
         }
 
         if ($this->getAuthority() !== '') {
-            $uri .= '//'.$this->getAuthority();
+            $uri = "$uri//{$this->getAuthority()}";
         }
 
-        $uri .= $this->path;
+        $uri = "$uri$this->path";
         if ($this->query !== '') {
-            $uri .= '?'.$this->query;
+            $uri = "$uri?$this->query";
         }
 
         if ($this->fragment !== '') {
-            $uri .= '#'.$this->fragment;
+            $uri = "$uri#$this->fragment";
         }
 
         return $uri;
@@ -100,11 +101,11 @@ class Uri implements UriInterface
         $authority = $this->host;
 
         if ($this->user_info !== '') {
-            $authority = $this->user_info.'@'.$authority;
+            $authority = "$this->user_info@$authority";
         }
 
         if ($this->port !== null) {
-            $authority .= ':'.$this->port;
+            $authority = "$authority:$this->port";
         }
 
         return $authority;
@@ -118,7 +119,7 @@ class Uri implements UriInterface
     public function withUserInfo(string $user, ?string $password = null): static
     {
         $new = clone $this;
-        $new->user_info = $user.($password ? ':'.$password : '');
+        $new->user_info = $user.($password ? ":$password" : '');
 
         return $new;
     }

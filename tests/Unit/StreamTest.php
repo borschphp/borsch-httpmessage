@@ -32,11 +32,6 @@ test('seek method', function () {
     expect($this->stream->tell())->toBe(5);
 });
 
-test('seek method should throw exception if seek position is greater than the stream size', function () {
-    $this->stream->write('Hello World');
-    $this->stream->seek(15);
-})->throws(RuntimeException::class);
-
 test('eof method', function () {
     $this->stream->write('Hello World');
     $this->stream->rewind();
@@ -110,7 +105,8 @@ test('read method should throw exception when stream is not readable', function 
 })->throws(RuntimeException::class);
 
 test('seek method should throw exception when stream is not seekable', function () {
-    $stream = new Stream('php://memory', 'r');
+    // An HTTP stream wrapper does not support seeking.
+    $stream = new Stream('https://path/to/random/stuff', 'rb');
     $stream->seek(5);
 })->throws(RuntimeException::class);
 

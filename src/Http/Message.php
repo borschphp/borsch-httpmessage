@@ -7,6 +7,7 @@ namespace Borsch\Http;
 
 use Borsch\Http\Exception\InvalidArgumentException;
 use Psr\Http\Message\{MessageInterface, StreamInterface};
+use function array_combine, array_keys, array_change_key_case, array_merge, strtolower, implode, is_string;
 
 /**
  * Class Message
@@ -14,19 +15,19 @@ use Psr\Http\Message\{MessageInterface, StreamInterface};
 class Message implements MessageInterface
 {
 
-    protected array $headers_lowercase = [];
+    /** @var Header[] $headers */
+    protected array $headers = [];
 
     public function __construct(
         protected string           $protocol = '1.1',
         protected ?StreamInterface $body = null,
-        protected array            $headers = []
+        array $headers = []
     )
     {
         $this->body = $body ?? new Stream('php://temp', 'r+');
-        $this->headers_lowercase = array_combine(
-            array_keys(array_change_key_case($this->headers)),
-            array_keys($this->headers)
-        );
+        foreach ($headers as $name => $values) {
+            $this->headers[] = new Header($name, $values);
+        }
     }
 
     public function getProtocolVersion(): string
@@ -48,22 +49,38 @@ class Message implements MessageInterface
 
     public function getHeaders(): array
     {
-        return $this->headers;
+        $headers = [];
+        foreach ($this->headers as $header) {
+            $headers[$header->name] = $header->values;
+        }
+        return $headers;
     }
 
     public function hasHeader(string $name): bool
     {
-        return isset($this->headers_lowercase[strtolower($name)]);
+        $name_lower = strtolower($name);
+
+        return array_reduce(
+            $this->headers,
+            fn ($has, Header $header) => $has || $header->normalized_name == $name_lower,
+            false
+        );
     }
 
     public function getHeader(string $name): array
     {
-        $name_lower = strtolower($name);
-        if (!$this->hasHeader($name_lower)) {
+        if (!$this->hasHeader($name)) {
             return [];
         }
 
-        return $this->headers[$this->headers_lowercase[$name_lower]] ?? [];
+        $name_lower = strtolower($name);
+
+        return array_reduce(
+            $this->headers,
+            fn ($header, Header $current) => $current->normalized_name == $name_lower ?
+                $current->values : $header,
+            []
+        );
     }
 
     public function getHeaderLine(string $name): string
@@ -77,74 +94,49 @@ class Message implements MessageInterface
 
     public function withHeader(string $name, $value): static
     {
-        if (empty($name)) {
-            throw InvalidArgumentException::mustBeAString('Header name');
-        }
-
-        if (!is_string($value) && !is_array($value)) {
-            throw InvalidArgumentException::mustBeAStringOrAnArrayOfString('Header value');
-        }
-
-        foreach ((array)$value as $header) {
-            if (!is_string($header)) {
-                throw InvalidArgumentException::mustBeAStringOrAnArrayOfString('Header value');
-            }
-        }
-
-        $name_lower = strtolower($name);
-
         $new = clone $this;
-        $new->headers_lowercase[$name_lower] = $name;
-        $new->headers[$name] = (array)$value;
+        $new->headers[] = new Header($name, $value);
 
         return $new;
     }
 
     public function withAddedHeader(string $name, $value): static
     {
-        if (empty($name)) {
-            throw InvalidArgumentException::invalid('header name');
-        }
-
-        if (!is_string($value) && !is_array($value)) {
-            throw InvalidArgumentException::invalid('header value');
-        }
-
-        foreach ((array)$value as $header) {
-            if (!is_string($header)) {
-                throw InvalidArgumentException::mustBeAStringOrAnArrayOfString('Header value');
-            }
-        }
-
         $name_lower = strtolower($name);
 
         $new = clone $this;
-        $new->headers_lowercase[$name_lower] = $name;
-        $new->headers[$new->headers_lowercase[$name_lower]] = array_merge(
-            $new->headers[$name] ?? [],
-            (array)$value
-        );
+
+        if ($new->hasHeader($name)) {
+            foreach ($new->headers as $index => $header) {
+                if ($header->normalized_name == $name_lower) {
+                    $new->headers[$index] = new Header(
+                        $header->name,
+                        array_merge($header->values, (array)$value)
+                    );
+                    break;
+                }
+            }
+        } else {
+            $new->headers[] = new Header($name, $value);
+        }
 
         return $new;
     }
 
     public function withoutHeader(string $name): static
     {
-        if (empty($name)) {
-            throw InvalidArgumentException::invalid('header name');
-        }
-
         $name_lower = strtolower($name);
-        if (!isset($this->headers_lowercase[$name_lower])) {
+        if (!$this->hasHeader($name)) {
             return $this;
         }
 
         $new = clone $this;
-
-        unset(
-            $new->headers[$new->headers_lowercase[$name_lower]],
-            $new->headers_lowercase[$name_lower]
-        );
+        foreach ($new->headers as $index => $header) {
+            if ($header->normalized_name == $name_lower) {
+                unset($new->headers[$index]);
+                break;
+            }
+        }
 
         return $new;
     }

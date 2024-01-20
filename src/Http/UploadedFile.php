@@ -8,6 +8,7 @@ namespace Borsch\Http;
 use Borsch\Http\Exception\RuntimeException;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UploadedFileInterface;
+use function fopen, fwrite, fclose;
 
 /**
  * Class UploadedFile

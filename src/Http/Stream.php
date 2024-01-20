@@ -9,6 +9,7 @@ use Borsch\Http\Exception\InvalidArgumentException;
 use Borsch\Http\Exception\RuntimeException;
 use Exception;
 use Psr\Http\Message\StreamInterface;
+use function fopen, fclose, clearstatcache, fstat, ftell, stream_get_meta_data, fread, strpbrk, fseek, feof, stream_get_contents;
 
 /**
  * Class Stream
