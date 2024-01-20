@@ -3,6 +3,7 @@
 namespace Borsch\Http;
 
 use Borsch\Http\Exception\InvalidArgumentException;
+use function is_string, strlen, strtolower, sprintf, implode;
 
 final class Header
 {

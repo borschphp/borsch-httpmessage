@@ -6,7 +6,7 @@
 namespace Borsch\Http;
 
 use Psr\Http\Message\{MessageInterface, StreamInterface};
-use function array_merge, strtolower, implode;
+use function array_merge, strtolower, implode, array_reduce;
 
 /**
  * Class Message
