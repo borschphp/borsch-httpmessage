@@ -43,3 +43,10 @@ it('should set the response flag', function () {
     $response = new JsonResponse(['foo' => 'bar'], 200, JSON_PRETTY_PRINT);
     expect($response->getBody()->__toString())->toBe("{\n    \"foo\": \"bar\"\n}");
 });
+
+it('should have status code 200 and flag 0 by default', function () {
+    $data = ['foo' => 'bar'];
+    $response = new JsonResponse($data);
+    expect($response->getStatusCode())->toBe(200)
+        ->and($response->getBody()->getContents())->toBe(json_encode($data));
+});

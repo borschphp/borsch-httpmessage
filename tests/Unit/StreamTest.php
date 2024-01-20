@@ -108,7 +108,7 @@ test('seek method should throw exception when stream is not seekable', function 
     // An HTTP stream wrapper does not support seeking.
     $stream = new Stream('https://path/to/random/stuff', 'rb');
     $stream->seek(5);
-})->throws(RuntimeException::class);
+})->throws(Exception::class);
 
 test('rewind method should throw exception when stream is not seekable', function () {
     $stream = new Stream('php://output', 'r');

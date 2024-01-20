@@ -25,7 +25,8 @@
     "ralouphie/getallheaders": "^3.0"
   },
   "require-dev": {
-    "pestphp/pest": "^1.22"
+    "pestphp/pest": "^1.22",
+    "nikic/php-parser": "^v4.18"
   },
   "autoload": {
     "psr-4": {

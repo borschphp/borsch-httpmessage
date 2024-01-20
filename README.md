@@ -84,6 +84,16 @@ You can run the tests by executing the following command:
 ./vendor/bin/pest
 ```
 
+Mutation testing has also been used to create this package, with `Infection`.  
+More information on [Infection page](https://infection.github.io/guide/index.html).  
+To run mutation tests, install `infection` as described in the documentation, then run this command:
+
+```shell
+XDEBUG_MODE=coverage infection
+```
+
+An text based and HTML report will be generated in the project folder.
+
 ## License
 
 The package is licensed under the MIT license. See [License File](https://github.com/borschphp/borsch-httpmessage/blob/master/LICENSE.md)

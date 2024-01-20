@@ -17,9 +17,7 @@ use Borsch\Http\{
 use Psr\Http\Message\{
     ServerRequestFactoryInterface,
     ServerRequestInterface,
-    StreamInterface,
     UploadedFileInterface,
-    UriInterface
 };
 
 /**
@@ -66,42 +64,10 @@ class ServerRequestFactory implements ServerRequestFactoryInterface
             $server_params,
             $cookies,
             $query_params,
-            $parsed_body,
-            $uploaded_files
+
+            $uploaded_files,
+            $parsed_body
         );
-    }
-
-    private function getHeadersFromServerParams(array $server_params): array
-    {
-        $headers = [];
-        foreach ($server_params as $key => $value) {
-            if (str_starts_with($key, 'HTTP_')) {
-                $name = str_replace('_', '-', substr($key, 5));
-                $headers[$name] = $value;
-            }
-        }
-
-        return $headers;
-    }
-
-    private function getStreamFromServerParams(array $server_params): StreamInterface
-    {
-        $stream = new Stream('php://temp', 'wb+');
-        $stream->write($server_params['php://input'] ?? '');
-
-        return $stream;
-    }
-
-    private function getCookiesFromServerParams(array $server_params): array
-    {
-        return $server_params['cookie'] ?? [];
-    }
-
-    private function getQueryParamsFromUri(UriInterface $uri): array
-    {
-        parse_str($uri->getQuery(), $query);
-
-        return $query;
     }
 
     private function getUploadedFilesFromServerParams(array $server_params): array
@@ -115,15 +81,6 @@ class ServerRequestFactory implements ServerRequestFactoryInterface
         }
 
         return $files;
-    }
-
-    private function getParsedBodyFromServerParams(array $server_params): array
-    {
-        if (isset($server_params['request_body'])) {
-            return $server_params['request_body'];
-        }
-
-        return [];
     }
 
     private function normalizeUploadedFile(array $file): UploadedFileInterface

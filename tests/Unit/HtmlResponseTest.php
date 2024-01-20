@@ -26,3 +26,8 @@ it('should set the response headers', function () {
         'Content-Type' => ['text/html; charset=utf-8']
     ]);
 });
+
+it('should have status code 200 by default', function () {
+    $response = new HtmlResponse();
+    expect($response->getStatusCode())->toBe(200);
+});

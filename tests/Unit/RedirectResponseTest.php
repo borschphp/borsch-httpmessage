@@ -27,3 +27,8 @@ it('should set the location header with UriInterface', function () {
 it('should throw InvalidArgumentException if invalid uri provided', function () {
     new RedirectResponse([]);
 })->throws(TypeError::class);
+
+it('should have status code 302 by default', function () {
+    $response = new RedirectResponse(new Uri('/'));
+    expect($response->getStatusCode())->toBe(302);
+});

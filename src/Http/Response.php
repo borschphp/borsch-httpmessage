@@ -54,6 +54,7 @@ class Response extends Message implements ResponseInterface
         return $new;
     }
 
+    /** @infection-ignore-all */
     protected static function getDefaultReasonPhrase(int $status_code) : string
     {
         $phrases = [

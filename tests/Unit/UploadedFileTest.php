@@ -19,7 +19,8 @@ it('should move uploaded file', function () {
 it('should move uploaded file with different name', function () {
     $path = __DIR__ . '/new_uploaded_file.txt';
     $this->uploaded_file->moveTo($path);
-    expect(file_exists($path))->toBeTrue();
+    expect(file_exists($path))->toBeTrue()
+        ->and(file_get_contents($path))->toHaveLength(11);
 });
 
 it('should throw exception when trying to move file after it has already been moved', function () {

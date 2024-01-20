@@ -1,6 +1,8 @@
 <?php declare(strict_types=1);
 
+use Borsch\Http\Exception\InvalidArgumentException;
 use Borsch\Http\Uri;
+use Psr\Http\Message\ServerRequestInterface;
 
 test('construct without parameter', function () {
     expect($this->server_request->getMethod())->toBe('GET')
@@ -144,4 +146,48 @@ test('should return a new instance even if the query params is the same', functi
     $new_request = $this->server_request->withQueryParams($params);
     expect($request)->not->toBe($new_request)
         ->and($request->getQueryParams())->toBe($new_request->getQueryParams());
+});
+
+test('withUploadedFiles should throw exception if not an instance of UploadedFileInterface', function () {
+    $this->server_request->withUploadedFiles(['not', 'an', 'UploadedFileInterface']);
+})->throws(InvalidArgumentException::class);
+
+test('withUploadedFiles should return new instance', function () {
+    $new = $this->server_request->withUploadedFiles([]);
+    expect($new)->not->toBe($this->server_request)
+        ->and($new)->toBeInstanceOf(ServerRequestInterface::class);
+});
+
+test('withParsedBody should return new instance', function () {
+    $new = $this->server_request->withParsedBody(['foo' => 'bar']);
+    expect($new)->not->toBe($this->server_request)
+        ->and($new)->toBeInstanceOf(ServerRequestInterface::class);
+});
+
+test('withAttribute should return new instance', function () {
+    $new = $this->server_request->withAttribute('foo', 'bar');
+    expect($new)->not->toBe($this->server_request)
+        ->and($new)->toBeInstanceOf(ServerRequestInterface::class);
+});
+
+test('withAttribute should throw exception on empty name', function () {
+    $this->server_request->withAttribute('', 'bar');
+})->throws(InvalidArgumentException::class);
+
+test('withoutAttribute should return new instance', function () {
+    $new = $this->server_request->withoutAttribute('foo');
+    expect($new)->not->toBe($this->server_request)
+        ->and($new)->toBeInstanceOf(ServerRequestInterface::class);
+});
+
+test('getAttribute should return default if not found', function () {
+    $new = $this->server_request->withAttribute('foo', 'bar');
+    $attr = $new->getAttribute('baz', 'default');
+    expect($attr)->toBe('default');
+});
+
+test('getAttribute should return attr if found', function () {
+    $new = $this->server_request->withAttribute('foo', 'bar');
+    $attr = $new->getAttribute('foo', 'default');
+    expect($attr)->toBe('bar');
 });

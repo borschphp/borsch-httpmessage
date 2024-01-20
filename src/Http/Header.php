@@ -45,7 +45,7 @@ final class Header
 
     public function equals(Header $header): bool
     {
-        return $this->normalized_name = $header->normalized_name &&
+        return $this->normalized_name == $header->normalized_name &&
             $this->values == $header->values;
     }
 }

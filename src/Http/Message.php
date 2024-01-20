@@ -5,9 +5,8 @@
 
 namespace Borsch\Http;
 
-use Borsch\Http\Exception\InvalidArgumentException;
 use Psr\Http\Message\{MessageInterface, StreamInterface};
-use function array_combine, array_keys, array_change_key_case, array_merge, strtolower, implode, is_string;
+use function array_merge, strtolower, implode;
 
 /**
  * Class Message
@@ -17,6 +16,7 @@ class Message implements MessageInterface
 
     /** @var Header[] $headers */
     protected array $headers = [];
+
 
     public function __construct(
         protected string           $protocol = '1.1',

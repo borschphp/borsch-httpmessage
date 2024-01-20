@@ -23,3 +23,8 @@ it('should set the content type header', function () {
     $response = new TextResponse();
     expect($response->getHeaderLine('Content-Type'))->toBe('text/plain; charset=utf-8');
 });
+
+it('should have status code 200 by default', function () {
+    $response = new TextResponse();
+    expect($response->getStatusCode())->toBe(200);
+});

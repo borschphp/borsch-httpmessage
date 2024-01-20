@@ -31,3 +31,14 @@ it('should set the response status code', function () {
     $response = new XmlResponse('', 404);
     expect($response->getStatusCode())->toBe(404);
 });
+
+it('should have status code 200 by default', function () {
+    $response = new XmlResponse('');
+    expect($response->getStatusCode())->toBe(200);
+});
+
+it('should transform string to StreamInterface, write in it and rewind it', function () {
+    $xml = '<root><foo>bar</foo></root>';
+    $response = new XmlResponse($xml);
+    expect($response->getBody()->getContents())->toBe($xml);
+});
