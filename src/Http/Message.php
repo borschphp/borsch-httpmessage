@@ -19,12 +19,11 @@ class Message implements MessageInterface
 
 
     public function __construct(
-        protected string           $protocol = '1.1',
+        protected string $protocol = '1.1',
         protected ?StreamInterface $body = null,
         array $headers = []
-    )
-    {
-        $this->body = $body ?? new Stream('php://temp', 'r+');
+    ) {
+        $this->body = $body ?? new Stream();
         foreach ($headers as $name => $values) {
             $this->headers[] = new Header($name, $values);
         }
@@ -59,28 +58,25 @@ class Message implements MessageInterface
     public function hasHeader(string $name): bool
     {
         $name_lower = strtolower($name);
+        foreach ($this->headers as $header) {
+            if ($header->normalized_name == $name_lower) {
+                return true;
+            }
+        }
 
-        return array_reduce(
-            $this->headers,
-            fn ($has, Header $header) => $has || $header->normalized_name == $name_lower,
-            false
-        );
+        return false;
     }
 
     public function getHeader(string $name): array
     {
-        if (!$this->hasHeader($name)) {
-            return [];
+        $name_lower = strtolower($name);
+        foreach ($this->headers as $header) {
+            if ($header->normalized_name == $name_lower) {
+                return $header->values;
+            }
         }
 
-        $name_lower = strtolower($name);
-
-        return array_reduce(
-            $this->headers,
-            fn ($header, Header $current) => $current->normalized_name == $name_lower ?
-                $current->values : $header,
-            []
-        );
+        return [];
     }
 
     public function getHeaderLine(string $name): string

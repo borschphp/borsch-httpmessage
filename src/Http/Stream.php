@@ -19,11 +19,20 @@ class Stream implements StreamInterface
     protected $resource;
 
     protected ?int $size = null;
+    protected array $metadata;
+    protected bool $seekable;
+    protected bool $readable;
+    protected bool $writable;
 
     public function __construct(string $resource = 'php://memory', string $mode = 'r+')
     {
         $this->resource = fopen($resource, $mode);
         $this->size = $this->getSize();
+
+        $this->metadata = stream_get_meta_data($this->resource);
+        $this->seekable = $this->metadata['seekable'] ?? false;
+        $this->writable = strpbrk($this->metadata['mode'] ?? '', 'waxc+') !== false;
+        $this->readable = strpbrk($this->metadata['mode'] ?? '', 'r+') !== false;
     }
 
     public function __destruct()
@@ -51,21 +60,21 @@ class Stream implements StreamInterface
 
     public function detach()
     {
-        if (!isset($this->resource)) {
-            return null;
-        }
-
         $result = $this->resource;
         unset($this->resource);
         $this->size = null;
+        $this->seekable = false;
+        $this->readable = false;
+        $this->writable = false;
+        $this->metadata = [];
 
         return $result;
     }
 
     public function getSize(): ?int
     {
-        if (!isset($this->resource)) {
-            return null;
+        if ($this->size !== null || !isset($this->resource)) {
+            return $this->size;
         }
 
         // Clear the stat cache if the stream has a URI
@@ -75,8 +84,7 @@ class Stream implements StreamInterface
 
         $stats = fstat($this->resource);
         if (isset($stats['size'])) {
-            $this->size = $stats['size'];
-            return $this->size;
+            return $this->size ??= $stats['size'];
         }
 
         return null;
@@ -84,10 +92,6 @@ class Stream implements StreamInterface
 
     public function tell(): int
     {
-        if (!isset($this->resource)) {
-            throw RuntimeException::noResourceAvailableCantDoAction(__METHOD__);
-        }
-
         $position = ftell($this->resource);
         if ($position === false) {
             throw RuntimeException::errorOccurredDuringMethodCall(__METHOD__);
@@ -99,22 +103,16 @@ class Stream implements StreamInterface
 
     public function getMetadata(?string $key = null)
     {
-        if (!isset($this->resource)) {
-            return $key ? null : [];
-        }
-
-        $meta = stream_get_meta_data($this->resource);
-
         if (!$key) {
-            return $meta;
+            return $this->metadata;
         }
 
-        return $meta[$key] ?? null;
+        return $this->metadata[$key] ?? null;
     }
 
     public function read(int $length): string
     {
-        if (!$this->isReadable()) {
+        if (!$this->readable) {
             throw RuntimeException::streamIsNotReadable();
         }
 
@@ -128,29 +126,17 @@ class Stream implements StreamInterface
 
     public function isSeekable(): bool
     {
-        if (!isset($this->resource)) {
-            return false;
-        }
-
-        return $this->getMetadata('seekable');
+        return $this->seekable;
     }
 
     public function isWritable(): bool
     {
-        if (!isset($this->resource)) {
-            return false;
-        }
-
-        return strpbrk($this->getMetadata('mode'), 'waxc+') !== false;
+        return $this->writable;
     }
 
     public function seek(int $offset, int $whence = SEEK_SET): void
     {
-        if (!isset($this->resource)) {
-            throw RuntimeException::noResourceAvailableCantDoAction(__METHOD__);
-        }
-
-        if (!$this->isSeekable()) {
+        if (!$this->seekable) {
             throw RuntimeException::streamIsNotSeekable();
         }
 
@@ -161,7 +147,7 @@ class Stream implements StreamInterface
 
     public function rewind(): void
     {
-        if (!$this->isSeekable()) {
+        if (!$this->seekable) {
             throw RuntimeException::streamIsNotSeekable();
         }
 
@@ -170,11 +156,7 @@ class Stream implements StreamInterface
 
     public function getContents(): string
     {
-        if (!isset($this->resource)) {
-            throw RuntimeException::noResourceAvailableCantDoAction(__METHOD__);
-        }
-
-        if (!$this->isReadable()) {
+        if (!$this->readable) {
             throw RuntimeException::streamIsNotReadable();
         }
 
@@ -189,21 +171,13 @@ class Stream implements StreamInterface
 
     public function isReadable(): bool
     {
-        if (!isset($this->resource)) {
-            return false;
-        }
-
-        return strpbrk($this->getMetadata('mode'), 'r+') !== false;
+        return $this->readable;
     }
 
 
     public function write(string $string): int
     {
-        if (!isset($this->resource)) {
-            throw RuntimeException::noResourceAvailableCantDoAction(__METHOD__);
-        }
-
-        if (!$this->isWritable()) {
+        if (!$this->writable) {
             throw RuntimeException::streamIsNotWritable();
         }
 
@@ -212,15 +186,13 @@ class Stream implements StreamInterface
             throw RuntimeException::errorOccurredDuringMethodCall(__METHOD__);
         }
 
+        $this->size = null;
+
         return $bytes;
     }
 
     public function eof(): bool
     {
-        if (!isset($this->resource)) {
-            return true;
-        }
-
         return feof($this->resource);
     }
 }
