@@ -19,6 +19,7 @@ use Psr\Http\Message\{
     ServerRequestInterface,
     UploadedFileInterface,
 };
+use function getallheaders, array_keys, str_starts_with, substr, array_diff, implode;
 
 /**
  * Class ServerRequestFactory

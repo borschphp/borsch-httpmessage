@@ -8,6 +8,7 @@ namespace Borsch\Http\Response;
 use Borsch\Http\Response;
 use Borsch\Http\Stream;
 use Psr\Http\Message\StreamInterface;
+use function json_encode;
 
 /**
  * Class JsonResponse

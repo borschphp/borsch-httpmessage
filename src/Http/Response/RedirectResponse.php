@@ -9,6 +9,7 @@ namespace Borsch\Http\Response;
 use Borsch\Http\Response;
 use Borsch\Http\Uri;
 use Psr\Http\Message\UriInterface;
+use function is_string;
 
 /**
  * Class RedirectResponse

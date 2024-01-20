@@ -5,8 +5,8 @@
 
 namespace Borsch\Http\Factory;
 
-use Borsch\Http\{Exception\InvalidArgumentException, Request, Uri};
-use Psr\Http\Message\{RequestFactoryInterface, RequestInterface, UriInterface};
+use Borsch\Http\Request;
+use Psr\Http\Message\{RequestFactoryInterface, RequestInterface};
 
 /**
  * Class RequestFactory
