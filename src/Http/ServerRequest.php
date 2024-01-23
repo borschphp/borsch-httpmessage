@@ -100,6 +100,10 @@ class ServerRequest extends Request implements ServerRequestInterface
 
     public function withParsedBody($data): ServerRequestInterface
     {
+        if (!is_array($data) && !is_object($data) && $data !== null) {
+            throw InvalidArgumentException::invalid('Parsed Body', ['array', 'object', 'null']);
+        }
+
         $new = clone $this;
         $new->parsed_body = $data;
 

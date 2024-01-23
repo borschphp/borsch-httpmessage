@@ -91,6 +91,17 @@ class Message implements MessageInterface
     public function withHeader(string $name, $value): static
     {
         $new = clone $this;
+
+        if ($new->hasHeader($name)) {
+            $name_lower = strtolower($name);
+            foreach ($new->headers as $index => $header) {
+                if ($header->normalized_name == $name_lower) {
+                    unset($new->headers[$index]);
+                    break;
+                }
+            }
+        }
+
         $new->headers[] = new Header($name, $value);
 
         return $new;

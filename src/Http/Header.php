@@ -24,9 +24,13 @@ final class Header
             $values = [$values];
         }
 
+        if (empty($values)) {
+            throw InvalidArgumentException::mustBeAStringOrAnArrayOfString('Header value(s)');
+        }
+
         $is_all_strings = array_reduce(
             $values,
-            fn ($carry, $value) => $carry && is_string($value) && strlen($value) > 0,
+            fn ($carry, $value) => $carry && is_string($value),
             true
         );
 
@@ -34,7 +38,7 @@ final class Header
             throw InvalidArgumentException::mustBeAStringOrAnArrayOfString('Header value');
         }
 
-        $this->values = $values;
+        $this->values = array_values($values);
 
         $this->normalized_name = strtolower($this->name);
     }

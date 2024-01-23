@@ -5,9 +5,11 @@
 
 namespace Borsch\Http;
 
+use Borsch\Http\Exception\InvalidArgumentException;
 use Borsch\Http\Exception\RuntimeException;
 use Exception;
 use Psr\Http\Message\StreamInterface;
+use Throwable;
 use function fopen, fclose, clearstatcache, fstat, ftell, stream_get_meta_data, fread, strpbrk, fseek, feof, stream_get_contents, fwrite;
 
 /**
@@ -24,20 +26,21 @@ class Stream implements StreamInterface
     protected bool $readable;
     protected bool $writable;
 
-    public function __construct(string $resource = 'php://memory', string $mode = 'r+')
+    public function __construct($resource = 'php://memory', string $mode = 'r+')
     {
-        $this->resource = fopen($resource, $mode);
+        if (!is_string($resource) && !is_resource($resource)) {
+            throw InvalidArgumentException::invalid('Resource', ['string', 'resource']);
+        }
+
+        $this->resource = is_string($resource) ?
+            fopen($resource, $mode) :
+            $resource;
         $this->size = $this->getSize();
 
         $this->metadata = stream_get_meta_data($this->resource);
         $this->seekable = $this->metadata['seekable'] ?? false;
         $this->writable = strpbrk($this->metadata['mode'] ?? '', 'waxc+') !== false;
         $this->readable = strpbrk($this->metadata['mode'] ?? '', 'r+') !== false;
-    }
-
-    public function __destruct()
-    {
-        $this->close();
     }
 
     public function __toString(): string
@@ -48,6 +51,11 @@ class Stream implements StreamInterface
         } catch (Exception) {
             return '';
         }
+    }
+
+    public function __destruct()
+    {
+        $this->close();
     }
 
     public function close(): void
@@ -160,7 +168,22 @@ class Stream implements StreamInterface
             throw RuntimeException::streamIsNotReadable();
         }
 
-        $contents = stream_get_contents($this->resource);
+        try {
+            $contents = stream_get_contents($this->resource);
+        } catch (Throwable $exception) {
+            unset($this->resource);
+            $this->size = null;
+            $this->seekable = false;
+            $this->readable = false;
+            $this->writable = false;
+            $this->metadata = [];
+
+            throw RuntimeException::noResourceAvailableCantDoAction(sprintf(
+                'get stream content (%s)',
+                $exception->getMessage()
+            ));
+        }
+
         if ($contents === false) {
             throw RuntimeException::errorOccurredDuringMethodCall(__METHOD__);
         }

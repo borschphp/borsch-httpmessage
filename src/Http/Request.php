@@ -33,6 +33,10 @@ class Request extends Message implements RequestInterface
         if ($this->uri->getQuery()) {
             $this->request_target = "$this->request_target?{$this->uri->getQuery()}";
         }
+
+        if (!$this->hasHeader('Host')) {
+            $this->headers[] = new Header('Host', $this->uri->getHost());
+        }
     }
 
 
@@ -45,6 +49,10 @@ class Request extends Message implements RequestInterface
     {
         if ($this->method === $method) {
             return $this;
+        }
+
+        if (!strlen($method)) {
+            throw InvalidArgumentException::mustBeAString('Method');
         }
 
         $new = clone $this;
@@ -82,16 +90,28 @@ class Request extends Message implements RequestInterface
         $new = clone $this;
         $new->uri = $uri;
 
-        if (!$preserve_host) {
-            return $new;
+        $request_target = $new->uri->getPath();
+        if ($new->uri->getQuery()) {
+            $request_target = "$request_target?{$new->uri->getQuery()}";
         }
 
-        if (!$new->hasHeader('host')) {
-            throw InvalidArgumentException::notFound('host header');
+        $new = $new->withRequestTarget($request_target);
+
+        if ($preserve_host) {
+            $host_header = $this->getHeaderLine('Host');
+            $new_host_header = $new->uri->getHost();
+
+            if (!strlen($host_header) && strlen($new_host_header)) {
+                return $new->withHeader('Host', $new->uri->getHost());
+            } elseif (!strlen($host_header) && !strlen($new_host_header) || strlen($host_header)) {
+                return $new;
+            }
         }
 
-        $host = $new->getHeaderLine('host');
+        if ($new->uri->getHost()) {
+            return $new->withHeader('Host', $new->uri->getHost());
+        }
 
-        return $new->withoutHeader('host')->withUri($uri->withHost($host));
+        return $new;
     }
 }

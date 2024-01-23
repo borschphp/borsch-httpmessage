@@ -7,49 +7,52 @@ namespace Borsch\Http;
 
 use Borsch\Http\Exception\InvalidArgumentException;
 use Psr\Http\Message\UriInterface;
-use function parse_url, is_numeric;
+use function parse_url, is_numeric, strtr;
+use function RingCentral\Psr7\str;
 
 /**
  * Class Uri
  */
 class Uri implements UriInterface
 {
+
+    protected const SCHEMES = [80 => 'http', 443 => 'https'];
+
     protected string $scheme = '';
-
     protected string $user_info = '';
-
     protected string $host = '';
-
     protected ?int $port = null;
-
     protected string $path = '';
-
     protected string $query = '';
-
     protected string $fragment = '';
 
     public function __construct(string $uri = '')
     {
         if ($uri !== '') {
-            $parts = parse_url($uri);
+            $parts = parse_url(strtolower($uri));
             if ($parts === false) {
                 throw InvalidArgumentException::unableToParseUri($uri);
             }
 
             $this->scheme = $parts['scheme'] ?? '';
             $this->user_info = $parts['user'] ?? '';
+            if (isset($parts['pass'])) {
+                $this->user_info .= ':'.$parts['pass'];
+            }
             $this->host = $parts['host'] ?? '';
 
             if (isset($parts['port'])) {
                 if (!is_numeric($parts['port']) || $parts['port'] < 1 || $parts['port'] > 65535) {
                     throw InvalidArgumentException::invalid('port value: '.$parts['port']);
                 }
-                $this->port = (int)$parts['port'];
-            } else {
-                $this->port = null;
+
+                $port = (int)$parts['port'];
+                if ((static::SCHEMES[$port] ?? -1) !== $this->scheme) {
+                    $this->port = (int)$parts['port'];
+                }
             }
 
-            $this->path = $parts['path'] ?? '';
+            $this->path = str_replace(' ', '%20', $parts['path'] ?? '');
             $this->query = $parts['query'] ?? '';
             $this->fragment = $parts['fragment'] ?? '';
         }
@@ -86,6 +89,10 @@ class Uri implements UriInterface
 
     public function withScheme(string $scheme): static
     {
+        if (is_numeric($scheme)) {
+            throw InvalidArgumentException::mustBeAString('Scheme');
+        }
+
         if ($this->scheme === $scheme) {
             return $this;
         }
@@ -104,7 +111,7 @@ class Uri implements UriInterface
             $authority = "$this->user_info@$authority";
         }
 
-        if ($this->port !== null) {
+        if ($this->port !== null && (static::SCHEMES[$this->port] ?? -1) != $this->scheme) {
             $authority = "$authority:$this->port";
         }
 
@@ -119,7 +126,10 @@ class Uri implements UriInterface
     public function withUserInfo(string $user, ?string $password = null): static
     {
         $new = clone $this;
-        $new->user_info = $user.($password ? ":$password" : '');
+        $new->user_info = str_replace(
+            ['@', '#'],
+            ['%40', '%23'],
+            $user.($password !== null ? ":$password" : ''));
 
         return $new;
     }
@@ -164,6 +174,10 @@ class Uri implements UriInterface
 
     public function getPath(): string
     {
+        if (str_starts_with($this->path, '//')) {
+            return '/'.ltrim($this->path, '/');
+        }
+
         return $this->path;
     }
 
