@@ -29,14 +29,12 @@ class Request extends Message implements RequestInterface
             $this->uri = new Uri($uri);
         }
 
-        $this->request_target = $this->uri->getPath();
-        if ($this->uri->getQuery()) {
-            $this->request_target = "$this->request_target?{$this->uri->getQuery()}";
-        }
+        $this->request_target = rtrim(
+            sprintf('%s?%s', $this->uri->getPath(), $this->uri->getQuery()),
+            '?'
+        );
 
-        if (!$this->hasHeader('Host')) {
-            $this->headers[] = new Header('Host', $this->uri->getHost());
-        }
+        $this->headers['host'] ??= new Header('Host', $this->uri->getHost());
     }
 
 

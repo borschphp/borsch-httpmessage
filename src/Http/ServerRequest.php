@@ -7,7 +7,6 @@ namespace Borsch\Http;
 
 use Borsch\Http\Exception\InvalidArgumentException;
 use Psr\Http\Message\{ServerRequestInterface, StreamInterface, UploadedFileInterface, UriInterface};
-use function array_key_exists;
 
 /**
  * Class ServerRequest
@@ -141,7 +140,7 @@ class ServerRequest extends Request implements ServerRequestInterface
 
     public function getAttribute(string $name, $default = null)
     {
-        if (!array_key_exists($name, $this->attributes)) {
+        if (!isset($this->attributes[$name])) {
             return $default;
         }
 

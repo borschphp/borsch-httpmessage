@@ -10,7 +10,6 @@ final class Header
 
     /** @var string|string[] $values */
     public readonly string|array $values;
-    public readonly string $normalized_name;
 
     public function __construct(
         public readonly string $name,
@@ -39,8 +38,6 @@ final class Header
         }
 
         $this->values = array_values($values);
-
-        $this->normalized_name = strtolower($this->name);
     }
 
     public function __toString():string
@@ -50,7 +47,7 @@ final class Header
 
     public function equals(Header $header): bool
     {
-        return $this->normalized_name == $header->normalized_name &&
+        return strtolower($this->name) === strtolower($header->name) &&
             $this->values == $header->values;
     }
 }

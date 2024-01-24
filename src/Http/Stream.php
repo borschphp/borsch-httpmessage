@@ -39,8 +39,10 @@ class Stream implements StreamInterface
 
         $this->metadata = stream_get_meta_data($this->resource);
         $this->seekable = $this->metadata['seekable'] ?? false;
-        $this->writable = strpbrk($this->metadata['mode'] ?? '', 'waxc+') !== false;
-        $this->readable = strpbrk($this->metadata['mode'] ?? '', 'r+') !== false;
+
+        $mode = $this->metadata['mode'] ?? '';
+        $this->writable = strpbrk($mode, 'waxc+') !== false;
+        $this->readable = strpbrk($mode, 'r+') !== false;
     }
 
     public function __toString(): string
@@ -61,20 +63,22 @@ class Stream implements StreamInterface
     public function close(): void
     {
         if (isset($this->resource)) {
-            fclose($this->resource);
+            if (is_resource($this->resource)) {
+                @fclose($this->resource);
+            }
             $this->detach();
         }
     }
 
     public function detach()
     {
+        if (!isset($this->resource)) {
+            return null;
+        }
+
         $result = $this->resource;
         unset($this->resource);
-        $this->size = null;
-        $this->seekable = false;
-        $this->readable = false;
-        $this->writable = false;
-        $this->metadata = [];
+        $this->reset();
 
         return $result;
     }
@@ -86,13 +90,15 @@ class Stream implements StreamInterface
         }
 
         // Clear the stat cache if the stream has a URI
-        if ($uri = $this->getMetadata('uri')) {
+        $uri = $this->getMetadata('uri');
+        if ($uri) {
             clearstatcache(true, $uri);
         }
 
         $stats = fstat($this->resource);
         if (isset($stats['size'])) {
-            return $this->size ??= $stats['size'];
+            $this->size = $stats['size'];
+            return $this->size;
         }
 
         return null;
@@ -100,7 +106,7 @@ class Stream implements StreamInterface
 
     public function tell(): int
     {
-        $position = ftell($this->resource);
+        $position = @ftell($this->resource);
         if ($position === false) {
             throw RuntimeException::errorOccurredDuringMethodCall(__METHOD__);
         }
@@ -124,7 +130,7 @@ class Stream implements StreamInterface
             throw RuntimeException::streamIsNotReadable();
         }
 
-        $data = fread($this->resource, $length);
+        $data = @fread($this->resource, $length);
         if ($data === false) {
             throw RuntimeException::errorOccurredDuringMethodCall(__METHOD__);
         }
@@ -148,7 +154,7 @@ class Stream implements StreamInterface
             throw RuntimeException::streamIsNotSeekable();
         }
 
-        if (fseek($this->resource, $offset, $whence) === -1) {
+        if (@fseek($this->resource, $offset, $whence) === -1) {
             throw RuntimeException::errorOccurredDuringMethodCall(__METHOD__);
         }
     }
@@ -172,11 +178,7 @@ class Stream implements StreamInterface
             $contents = stream_get_contents($this->resource);
         } catch (Throwable $exception) {
             unset($this->resource);
-            $this->size = null;
-            $this->seekable = false;
-            $this->readable = false;
-            $this->writable = false;
-            $this->metadata = [];
+            $this->reset();
 
             throw RuntimeException::noResourceAvailableCantDoAction(sprintf(
                 'get stream content (%s)',
@@ -204,12 +206,12 @@ class Stream implements StreamInterface
             throw RuntimeException::streamIsNotWritable();
         }
 
-        $bytes = fwrite($this->resource, $string);
+        $bytes = @fwrite($this->resource, $string);
         if ($bytes === false) {
             throw RuntimeException::errorOccurredDuringMethodCall(__METHOD__);
         }
 
-        $this->size = null;
+        $this->size = $bytes;
 
         return $bytes;
     }
@@ -217,5 +219,14 @@ class Stream implements StreamInterface
     public function eof(): bool
     {
         return feof($this->resource);
+    }
+
+    private function reset(): void
+    {
+        $this->size = null;
+        $this->seekable = false;
+        $this->readable = false;
+        $this->writable = false;
+        $this->metadata = [];
     }
 }

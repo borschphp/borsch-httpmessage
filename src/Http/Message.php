@@ -6,7 +6,7 @@
 namespace Borsch\Http;
 
 use Psr\Http\Message\{MessageInterface, StreamInterface};
-use function array_merge, strtolower, implode, array_reduce;
+use function array_merge, strtolower, implode;
 
 /**
  * Class Message
@@ -25,7 +25,7 @@ class Message implements MessageInterface
     ) {
         $this->body = $body ?? new Stream();
         foreach ($headers as $name => $values) {
-            $this->headers[] = new Header($name, $values);
+            $this->headers[strtolower($name)] = new Header($name, $values);
         }
     }
 
@@ -57,26 +57,12 @@ class Message implements MessageInterface
 
     public function hasHeader(string $name): bool
     {
-        $name_lower = strtolower($name);
-        foreach ($this->headers as $header) {
-            if ($header->normalized_name == $name_lower) {
-                return true;
-            }
-        }
-
-        return false;
+        return isset($this->headers[strtolower($name)]);
     }
 
     public function getHeader(string $name): array
     {
-        $name_lower = strtolower($name);
-        foreach ($this->headers as $header) {
-            if ($header->normalized_name == $name_lower) {
-                return $header->values;
-            }
-        }
-
-        return [];
+        return $this->headers[strtolower($name)]->values ?? [];
     }
 
     public function getHeaderLine(string $name): string
@@ -92,17 +78,10 @@ class Message implements MessageInterface
     {
         $new = clone $this;
 
-        if ($new->hasHeader($name)) {
-            $name_lower = strtolower($name);
-            foreach ($new->headers as $index => $header) {
-                if ($header->normalized_name == $name_lower) {
-                    unset($new->headers[$index]);
-                    break;
-                }
-            }
-        }
+        $name_lower = strtolower($name);
+        unset($new->headers[$name_lower]);
 
-        $new->headers[] = new Header($name, $value);
+        $new->headers[$name_lower] = new Header($name, $value);
 
         return $new;
     }
@@ -114,17 +93,12 @@ class Message implements MessageInterface
         $new = clone $this;
 
         if ($new->hasHeader($name)) {
-            foreach ($new->headers as $index => $header) {
-                if ($header->normalized_name == $name_lower) {
-                    $new->headers[$index] = new Header(
-                        $header->name,
-                        array_merge($header->values, (array)$value)
-                    );
-                    break;
-                }
-            }
+            $new->headers[$name_lower] = new Header(
+                $new->headers[$name_lower]->name,
+                array_merge($new->headers[$name_lower]->values, (array)$value)
+            );
         } else {
-            $new->headers[] = new Header($name, $value);
+            $new->headers[$name_lower] = new Header($name, $value);
         }
 
         return $new;
@@ -138,12 +112,7 @@ class Message implements MessageInterface
         }
 
         $new = clone $this;
-        foreach ($new->headers as $index => $header) {
-            if ($header->normalized_name == $name_lower) {
-                unset($new->headers[$index]);
-                break;
-            }
-        }
+        unset($new->headers[$name_lower]);
 
         return $new;
     }
