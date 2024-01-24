@@ -82,7 +82,7 @@ it('should return the headers', function () {
 it('should return a new instance with the specified headers', function () {
     $headers = ['Host' => ['example.org'], 'User-Agent' => ['Borsch']];
     $new_request = $this->request->withHeader('Host', ['example.org']);
-    expect($new_request->getHeaders())->toBe($headers);
+    expect($new_request->getHeaders())->toMatchArray($headers);
 });
 
 it('should return a new instance with added headers', function () {

@@ -38,11 +38,6 @@ class StreamFactory implements StreamFactoryInterface
      */
     public function createStreamFromResource($resource): StreamInterface
     {
-        $meta = stream_get_meta_data($resource);
-
-        return new Stream(
-            $meta['uri'],
-            $meta['mode']
-        );
+        return new Stream($resource);
     }
 }

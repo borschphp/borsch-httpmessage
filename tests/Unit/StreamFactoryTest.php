@@ -20,5 +20,4 @@ it('should create a stream from a resource', function () {
     $stream = $this->factory->createStreamFromResource($resource);
     expect($stream)->toBeInstanceOf(StreamInterface::class)
         ->and((string)$stream)->toEqual(file_get_contents($file));
-    fclose($resource);
 });

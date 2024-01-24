@@ -10,7 +10,6 @@ final class Header
 
     /** @var string|string[] $values */
     public readonly string|array $values;
-    public readonly string $normalized_name;
 
     public function __construct(
         public readonly string $name,
@@ -24,9 +23,13 @@ final class Header
             $values = [$values];
         }
 
+        if (empty($values)) {
+            throw InvalidArgumentException::mustBeAStringOrAnArrayOfString('Header value(s)');
+        }
+
         $is_all_strings = array_reduce(
             $values,
-            fn ($carry, $value) => $carry && is_string($value) && strlen($value) > 0,
+            fn ($carry, $value) => $carry && is_string($value),
             true
         );
 
@@ -34,9 +37,7 @@ final class Header
             throw InvalidArgumentException::mustBeAStringOrAnArrayOfString('Header value');
         }
 
-        $this->values = $values;
-
-        $this->normalized_name = strtolower($this->name);
+        $this->values = array_values($values);
     }
 
     public function __toString():string
@@ -46,7 +47,7 @@ final class Header
 
     public function equals(Header $header): bool
     {
-        return $this->normalized_name == $header->normalized_name &&
+        return strtolower($this->name) === strtolower($header->name) &&
             $this->values == $header->values;
     }
 }

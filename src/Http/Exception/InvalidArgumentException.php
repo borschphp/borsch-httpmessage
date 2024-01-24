@@ -33,9 +33,14 @@ class InvalidArgumentException extends \InvalidArgumentException
         return new static(sprintf('%s must be a string or an instance of %s.', $name, $instance));
     }
 
-    public static function invalid(string $name): static
+    public static function invalid(string $name, array $types = []): static
     {
-        return new static(sprintf('Invalid %s.', $name));
+        $error = sprintf('Invalid %s.', $name);
+        if (count($types)) {
+            $error .= sprintf(' Must be of type(s): %s', implode(', ', $types));
+        }
+
+        return new static($error);
     }
 
     public static function notFound(string $name): static
